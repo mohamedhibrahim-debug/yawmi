@@ -59,6 +59,8 @@ export function normalizePhone(raw: string): string | null {
 function mapError(message: string): CloudError {
   const m = message.toLowerCase();
   if (m.includes('phone') && (m.includes('provider') || m.includes('unsupported') || m.includes('disabled'))) return new CloudError('phoneUnavailable');
+  // Supabase's built-in email allows only a few emails per hour until a custom sender is connected.
+  if (m.includes('email rate limit') || m.includes('over_email_send_rate_limit')) return new CloudError('emailLimit');
   if (m.includes('rate') || m.includes('seconds') || m.includes('too many')) return new CloudError('tooMany');
   if (m.includes('expired') || m.includes('invalid') || m.includes('token')) return new CloudError('badCode');
   if (m.includes('fetch') || m.includes('network')) return new CloudError('offline');

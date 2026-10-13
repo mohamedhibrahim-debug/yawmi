@@ -75,7 +75,7 @@ const ar = {
   lastBackup: 'آخر نسخة: {when}', neverBackedUp: 'لسه مفيش نسخة على السحابة', autoBackup: 'بنحفظ نسخة لوحدنا بعد كل تعديل.',
   backedUp: 'اتحفظت على السحابة', cloudRestoreAsk: 'لقينا نسخة من {when} على حسابك. نرجّعها على الموبايل ده؟', restoreYes: 'رجّعيها', restoreNo: 'لأ، خلّي اللي هنا',
   welcomeBack: 'أهلًا بيكي تاني',
-  phoneUnavailable: 'الدخول برقم الموبايل لسه مش متاح. استخدمي الإيميل دلوقتي.', tooMany: 'استني دقيقة وجربي تاني.', badCode: 'الكود غلط أو انتهى. جربي تاني.',
+  phoneUnavailable: 'الدخول برقم الموبايل لسه مش متاح. استخدمي الإيميل دلوقتي.', tooMany: 'استني دقيقة وجربي تاني.', emailLimit: 'وصلنا للحد الأقصى من الإيميلات المسموح بيها في الساعة دي. جربي تاني بعد ساعة تقريبًا.', badCode: 'الكود غلط أو انتهى. جربي تاني.',
   offline: 'مفيش نت. جربي تاني لما النت يرجع.', loginFailed: 'ما قدرناش ندخلك. جربي تاني.', badContact: 'اكتبي إيميل صحيح أو رقم موبايل زي ٠١٠١٢٣٤٥٦٧٨', signedOut: 'سجّلي دخول الأول.',
 };
 
@@ -151,7 +151,7 @@ const en: Dict = {
   lastBackup: 'Last backup: {when}', neverBackedUp: 'No cloud backup yet', autoBackup: 'We back up automatically after each change.',
   backedUp: 'Backed up to the cloud', cloudRestoreAsk: 'We found a backup from {when} on your account. Restore it on this phone?', restoreYes: 'Restore', restoreNo: "No, keep this phone's data",
   welcomeBack: 'Welcome back',
-  phoneUnavailable: "Sign-in by mobile number isn't available yet. Please use email for now.", tooMany: 'Please wait a minute and try again.', badCode: 'That code is wrong or expired. Try again.',
+  phoneUnavailable: "Sign-in by mobile number isn't available yet. Please use email for now.", tooMany: 'Please wait a minute and try again.', emailLimit: 'We hit the limit of sign-in emails for this hour. Please try again in about an hour.', badCode: 'That code is wrong or expired. Try again.',
   offline: "You're offline. Try again when you're connected.", loginFailed: "Couldn't sign you in. Try again.", badContact: 'Enter a valid email or a mobile number like 01012345678', signedOut: 'Please sign in first.',
 };
 
