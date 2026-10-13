@@ -1,0 +1,4 @@
+node_modules/
+.claude/claudex/
+reviews/
+.env
