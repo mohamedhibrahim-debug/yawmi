@@ -12,7 +12,7 @@ const LEGACY_KEY = 'yawmi-home-app-v1'; // prototype's localStorage key
 
 export class ConflictError extends Error {
   constructor() {
-    super('اتعدلت البيانات من صفحة تانية مفتوحة. حدّثنا الصفحة بآخر نسخة.');
+    super('conflict');
   }
 }
 

@@ -3,6 +3,7 @@
 // → 3 drafts. Every value that was guessed rather than heard is flagged, so the
 // review screen can show it as a suggestion she can change.
 import { LIMITS, type Category, type Period } from './model';
+import { parseSpeechEn } from './voice-en';
 
 export type DayRef = { kind: 'offset'; days: number } | { kind: 'weekday'; day: number };
 
@@ -194,7 +195,13 @@ function splitSegments(text: string): string[] {
 
 // ---------- main ----------
 
-export function parseSpeech(text: string): Draft[] {
+/** Parses speech or typed text in the app language. Arabic is the default. */
+export function parseSpeech(text: string, lang: 'ar' | 'en' = 'ar'): Draft[] {
+  if (lang === 'en') return parseSpeechEn(text);
+  return parseSpeechAr(text);
+}
+
+function parseSpeechAr(text: string): Draft[] {
   const drafts: Draft[] = [];
   let inheritedDay: DayRef | null = null;
   let inheritedPeriod: Period | null = null;

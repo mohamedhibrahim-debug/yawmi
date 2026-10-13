@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="#28574a"/><text x="256" y="350" font-family="Tahoma, 'Segoe UI', sans-serif" font-size="300" font-weight="700" fill="#ffffff" text-anchor="middle">ي</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Yawmi">
+  <rect width="512" height="512" rx="114" fill="#28574a"/>
+  <!-- sun rising inside the home: your day starts here -->
+  <path d="M170 392a86 86 0 0 1 172 0z" fill="#f3c98b"/>
+  <g stroke="#f3c98b" stroke-width="18" stroke-linecap="round">
+    <path d="M256 268v-26"/>
+    <path d="M182 306l-17-17"/>
+    <path d="M330 306l17-17"/>
+  </g>
+  <path d="M116 250 256 136l140 114v142H116z" fill="none" stroke="#f5f7f2" stroke-width="26" stroke-linejoin="round"/>
+</svg>

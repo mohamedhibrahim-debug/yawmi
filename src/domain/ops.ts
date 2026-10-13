@@ -6,31 +6,36 @@ import {
 } from './model';
 import { addDays, isDayKey, startOfDay, weekday, type DayKey } from './time';
 
-export class DomainError extends Error {}
+/** A rule was broken. `code` is translated by the UI (see src/i18n). */
+export class DomainError extends Error {
+  constructor(public code: string, public params: Record<string, number | string> = {}) {
+    super(code);
+  }
+}
 
 // ---------- validation of user input ----------
 
 export function cleanFields(input: Partial<TaskFields>): TaskFields {
   const title = typeof input.title === 'string' ? input.title.trim() : '';
-  if (!title) throw new DomainError('اكتبي اسم الحاجة');
-  if (title.length > LIMITS.title) throw new DomainError(`الاسم أطول من ${LIMITS.title} حرف`);
+  if (!title) throw new DomainError('titleRequired');
+  if (title.length > LIMITS.title) throw new DomainError('titleTooLong', { max: LIMITS.title });
   const effort = Math.round(Number(input.effort));
   if (!Number.isFinite(effort) || effort < LIMITS.effortMin || effort > LIMITS.effortMax)
-    throw new DomainError(`وقت المجهود لازم يكون من ${LIMITS.effortMin} لـ ${LIMITS.effortMax} دقيقة`);
+    throw new DomainError('effortRange', { min: LIMITS.effortMin, max: LIMITS.effortMax });
   const wait = Math.round(Number(input.wait ?? 0));
   if (!Number.isFinite(wait) || wait < 0 || wait > LIMITS.waitMax)
-    throw new DomainError(`وقت الانتظار لازم يكون من ٠ لـ ${LIMITS.waitMax} دقيقة`);
+    throw new DomainError('waitRange', { max: LIMITS.waitMax });
   const category = (input.category ?? 'home') as Category;
-  if (!Object.hasOwn(CATEGORIES, category)) throw new DomainError('القسم مش معروف');
+  if (!Object.hasOwn(CATEGORIES, category)) throw new DomainError('badCategory');
   const period = (input.period ?? 'morning') as Period;
-  if (!Object.hasOwn(PERIODS, period)) throw new DomainError('الوقت مش معروف');
+  if (!Object.hasOwn(PERIODS, period)) throw new DomainError('badPeriod');
   const notes = typeof input.notes === 'string' ? input.notes : '';
-  if (notes.length > LIMITS.notes) throw new DomainError(`الملاحظات أطول من ${LIMITS.notes} حرف`);
+  if (notes.length > LIMITS.notes) throw new DomainError('notesTooLong', { max: LIMITS.notes });
   return { title, category, effort, wait, priority: !!input.priority, period, notes };
 }
 
 function assertDay(date: string): asserts date is DayKey {
-  if (!isDayKey(date)) throw new DomainError('التاريخ غير صحيح');
+  if (!isDayKey(date)) throw new DomainError('badDate');
 }
 
 // ---------- tasks ----------
@@ -92,14 +97,32 @@ function clearWait(db: DB, id: string) {
   db.waits = db.waits.filter((w) => w.taskId !== id);
 }
 
-/** Toggles done / todo. Completing stops its timer and clears its wait. */
-export function toggleDone(db: DB, id: string, now = Date.now()): void {
+/**
+ * Toggles done / todo. Completing stops its timer. If the task has waiting time
+ * (washing machine, oven) and no wait is running, completing starts the wait:
+ * her part is done and the machine is now working. Returns true when a wait started.
+ */
+export function toggleDone(db: DB, id: string, now = Date.now()): boolean {
   const t = find(db, id);
-  if (!t || t.status === 'deleted') return;
+  if (!t || t.status === 'deleted') return false;
   if (db.active?.taskId === id) stop(db, now);
-  clearWait(db, id);
   t.status = t.status === 'done' ? 'todo' : 'done';
   t.completedAt = t.status === 'done' ? now : null;
+  if (t.status === 'done' && t.wait > 0 && !db.waits.some((w) => w.taskId === id)) {
+    db.waits.push({ taskId: id, start: now, end: now + t.wait * 60_000 });
+    return true;
+  }
+  return false;
+}
+
+/** Unfinished tasks from days before `today`, oldest first. */
+export function overdue(db: DB, today: DayKey): Task[] {
+  return db.tasks.filter((t) => t.status === 'todo' && t.date < today).sort((a, b) => a.date.localeCompare(b.date) || a.order - b.order);
+}
+
+/** Moves the given unfinished tasks to `today`. */
+export function bringForward(db: DB, ids: string[], today: DayKey, now = Date.now()): void {
+  for (const id of ids) move(db, id, today, now);
 }
 
 export function move(db: DB, id: string, date: DayKey, now = Date.now()): void {
@@ -165,7 +188,7 @@ export function adjustTime(db: DB, taskId: string, day: DayKey, deltaMinutes: nu
   assertDay(day);
   const delta = Math.round(deltaMinutes);
   if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > LIMITS.adjustMax)
-    throw new DomainError('اكتبي عدد دقايق صحيح');
+    throw new DomainError('badMinutes');
   if (!find(db, taskId)) return;
   db.adjustments.push({ id: uid(), taskId, day, deltaMinutes: delta });
 }
@@ -193,7 +216,7 @@ export function deleteRoutine(db: DB, id: string): void {
 
 function cleanDays(days: number[]): number[] {
   const set = [...new Set(days.map(Number))].filter((d) => Number.isInteger(d) && d >= 0 && d <= 6).sort();
-  if (!set.length) throw new DomainError('اختاري يوم واحد على الأقل');
+  if (!set.length) throw new DomainError('pickDay');
   return set;
 }
 

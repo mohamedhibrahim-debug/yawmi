@@ -65,3 +65,20 @@ describe('voice parsing (Egyptian Arabic)', () => {
     expect(parseSpeech('عايزة يعني')).toEqual([]);
   });
 });
+
+describe('voice parsing (English)', () => {
+  it('splits a natural sentence and reads periods, days, durations and priority', () => {
+    const d = parseSpeech('Start the laundry, cook lunch in the afternoon for 45 minutes, and tomorrow morning clean the bathroom for half an hour, it is important', 'en');
+    expect(d.map((x) => x.title)).toEqual(['Start the laundry', 'Cook lunch', 'Clean the bathroom']);
+    expect(d[0]).toMatchObject({ category: 'home', effort: 10, wait: 50 });
+    expect(d[1]).toMatchObject({ category: 'food', effort: 45, period: 'afternoon', day: { kind: 'offset', days: 0 } });
+    expect(d[2]).toMatchObject({ effort: 30, period: 'morning', priority: true, day: { kind: 'offset', days: 1 } });
+  });
+
+  it('reads waiting time and weekdays', () => {
+    const d = parseSpeech('make the dough 15 minutes then let it rest for an hour. On Friday go to the market', 'en');
+    expect(d).toHaveLength(2);
+    expect(d[0]).toMatchObject({ effort: 15, wait: 60 });
+    expect(d[1]).toMatchObject({ day: { kind: 'weekday', day: 5 }, category: 'other' });
+  });
+});

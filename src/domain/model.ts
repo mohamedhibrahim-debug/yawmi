@@ -3,6 +3,9 @@ import { deviceZone } from './time';
 
 export const SCHEMA_VERSION = 2;
 
+/** 'auto' follows the phone's language. */
+export type Language = 'auto' | 'ar' | 'en';
+
 export const CATEGORIES = {
   home: 'البيت',
   food: 'الأكل',
@@ -89,6 +92,7 @@ export interface Settings {
   start: string; // HH:mm
   onboarded: boolean;
   zone: string; // IANA planner zone
+  language: Language;
 }
 
 export interface DB {
@@ -107,7 +111,7 @@ export function freshDB(zone = deviceZone()): DB {
   return {
     version: SCHEMA_VERSION,
     revision: 0,
-    settings: { name: '', capacity: 180, start: '09:00', onboarded: false, zone },
+    settings: { name: '', capacity: 180, start: '09:00', onboarded: false, zone, language: 'auto' },
     tasks: [],
     routines: [],
     sessions: [],

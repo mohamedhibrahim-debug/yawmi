@@ -8,6 +8,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import type { DB } from '../domain/model';
+import { locale, t } from '../i18n';
 
 export const isNative = Capacitor.isNativePlatform();
 
@@ -43,14 +44,16 @@ export async function speechKind(): Promise<SpeechKind> {
   return webRecognizer() ? 'web' : 'none';
 }
 
-/** Egyptian Arabic first, then any Arabic the device supports. */
+/** The app language's best recognizer: Egyptian Arabic first for Arabic; the phone's English for English. */
 async function pickLanguage(): Promise<string> {
+  const wanted = locale() === 'ar' ? ['ar-EG', 'ar-SA', 'ar-AE', 'ar'] : [navigator.language, 'en-US', 'en-GB', 'en'];
+  const prefix = locale() === 'ar' ? 'ar' : 'en';
   try {
     const { languages } = await SpeechRecognition.getSupportedLanguages();
     const list = (languages as string[]).map((l) => String(l).replace('_', '-'));
-    return ['ar-EG', 'ar-SA', 'ar-AE', 'ar'].find((l) => list.includes(l)) ?? list.find((l) => l.startsWith('ar')) ?? 'ar-EG';
+    return wanted.find((l) => l && list.includes(l)) ?? list.find((l) => l.startsWith(prefix)) ?? wanted[0];
   } catch {
-    return 'ar-EG';
+    return wanted[0];
   }
 }
 
@@ -69,7 +72,7 @@ export async function listen(onText: (text: string) => void, onEnd: (error?: str
   if (isNative) {
     const perm = await SpeechRecognition.requestPermissions();
     if (perm.speechRecognition !== 'granted')
-      throw new SpeechError('محتاجين إذن المايك والتعرّف على الكلام. فعّليه من الإعدادات، أو اكتبي بدل الكلام.');
+      throw new SpeechError('voicePermission');
     let latest = '';
     await SpeechRecognition.removeAllListeners();
     await SpeechRecognition.addListener('partialResults', ({ matches }) => {
@@ -85,9 +88,9 @@ export async function listen(onText: (text: string) => void, onEnd: (error?: str
   }
 
   const Ctor = webRecognizer();
-  if (!Ctor) throw new SpeechError('الجهاز ده مش بيدعم الكلام. اكتبي، أو دوسي على مايك الكيبورد.');
+  if (!Ctor) throw new SpeechError('voiceUnsupported');
   const rec = new Ctor();
-  rec.lang = 'ar-EG';
+  rec.lang = locale() === 'ar' ? 'ar-EG' : (navigator.language?.startsWith('en') ? navigator.language : 'en-US');
   rec.continuous = true;
   rec.interimResults = true;
   let finalText = '';
@@ -106,8 +109,8 @@ export async function listen(onText: (text: string) => void, onEnd: (error?: str
   rec.onerror = (e) => {
     ended = true;
     onEnd(e.error === 'not-allowed' || e.error === 'service-not-allowed'
-      ? 'المايك مقفول للتطبيق ده. فعّليه من إعدادات المتصفح، أو اكتبي.'
-      : e.error === 'no-speech' ? 'ما سمعناش كلام. جربي تاني أو اكتبي.' : undefined);
+      ? 'voiceMicBlocked'
+      : e.error === 'no-speech' ? 'voiceNoSpeech' : undefined);
   };
   rec.onend = () => { ended = true; onEnd(); };
   rec.start();
@@ -158,8 +161,8 @@ export async function syncWaitAlarms(db: DB, now = Date.now()): Promise<void> {
     await LocalNotifications.schedule({
       notifications: toAdd.map(([id, n]) => ({
         id,
-        title: 'يومي',
-        body: n.title ? `${n.title}: الانتظار خلص غالبًا` : 'الانتظار خلص غالبًا',
+        title: t('appName'),
+        body: n.title ? t('waitDoneOf', { title: n.title }) : t('waitDone'),
         schedule: { at: new Date(n.at), allowWhileIdle: true },
         sound: undefined
       }))

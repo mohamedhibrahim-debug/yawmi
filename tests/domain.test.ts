@@ -236,3 +236,38 @@ describe('import / export', () => {
     expect(() => parseBackup(JSON.stringify(exportEnvelope(bad3)))).toThrow(ImportError);
   });
 });
+
+describe('redesign rules', () => {
+  it('completing a task with waiting time starts its wait, and the wait survives completion', async () => {
+    const { toggleDone } = await import('../src/domain/ops');
+    const db = db0();
+    const t = addTask(db, { ...base, wait: 50 }, D);
+    expect(toggleDone(db, t.id, 1000)).toBe(true);
+    expect(db.waits).toEqual([{ taskId: t.id, start: 1000, end: 1000 + 50 * 60_000 }]);
+    // Backups with a wait on a done task are valid.
+    expect(() => parseBackup(JSON.stringify(exportEnvelope(db)), ZONE)).not.toThrow();
+    // Un-completing doesn't start a second wait.
+    expect(toggleDone(db, t.id, 2000)).toBe(false);
+    expect(db.waits).toHaveLength(1);
+  });
+
+  it('lists unfinished tasks from earlier days and brings them forward', async () => {
+    const { overdue, bringForward } = await import('../src/domain/ops');
+    const db = db0();
+    const old = addTask(db, base, addDays(D, -2));
+    const doneOld = addTask(db, { ...base, title: 'x' }, addDays(D, -1));
+    toggleDone(db, doneOld.id);
+    addTask(db, base, D);
+    expect(overdue(db, D).map((x) => x.id)).toEqual([old.id]);
+    bringForward(db, [old.id], D);
+    expect(overdue(db, D)).toHaveLength(0);
+    expect(db.tasks.find((x) => x.id === old.id)!.date).toBe(D);
+  });
+
+  it('old backups without a language default to following the phone', () => {
+    const db = db0();
+    const raw = JSON.parse(JSON.stringify(exportEnvelope(db)));
+    delete raw.data.settings.language;
+    expect(parseBackup(JSON.stringify(raw), ZONE).settings.language).toBe('auto');
+  });
+});

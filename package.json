@@ -30,6 +30,7 @@
     "@capacitor/cli": "^7.6.9",
     "@capacitor/ios": "^7.6.9",
     "@preact/preset-vite": "^2.10.6",
+    "@resvg/resvg-js": "^2.6.2",
     "fake-indexeddb": "^6.2.5",
     "typescript": "^5.9.3",
     "vite": "^6.4.4",

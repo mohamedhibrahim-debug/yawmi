@@ -91,6 +91,9 @@ export function validate(d: Record<string, unknown>): DB {
   if (!isInt(st.capacity, LIMITS.capacityMin, LIMITS.capacityMax)) fail('الوقت المتاح');
   if (typeof st.start !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(st.start)) fail('بداية اليوم');
   if (typeof st.onboarded !== 'boolean') fail('الإعدادات');
+  // Older backups have no language; default to following the phone.
+  if (st.language === undefined) st.language = 'auto';
+  if (!['auto', 'ar', 'en'].includes(st.language as string)) fail('اللغة');
   if (!isValidZone(st.zone)) fail('المنطقة الزمنية');
 
   for (const key of ['tasks', 'routines', 'sessions', 'adjustments', 'waits'])
@@ -156,7 +159,8 @@ export function validate(d: Record<string, unknown>): DB {
     if (!isObj(w) || !taskIds.has(w.taskId as string) || waitIds.has(w.taskId as string)) fail('انتظار');
     if (!isTime(w.start) || !isTime(w.end) || (w.end as number) < (w.start as number)) fail('انتظار');
     if (isObj(active) && active.taskId === w.taskId) fail('انتظار');
-    if (taskStatus.get(w.taskId as string) !== 'todo') fail('انتظار');
+    // A wait may outlive its task: finishing "start the washing machine" starts the cycle.
+    if (taskStatus.get(w.taskId as string) === 'deleted') fail('انتظار');
     waitIds.add(w.taskId as string);
   }
 
