@@ -17,7 +17,6 @@ import type { Account, CloudBackup } from '../platform/cloud';
 // Supabase loads lazily: only after a sign-in, or when a saved session exists.
 const cloud = () => import('../platform/cloud');
 const hasSavedSession = () => { try { return !!localStorage.getItem('yawmi-auth'); } catch { return false; } };
-const linkInUrl = () => /access_token=|refresh_token=|error_description=/.test(location.hash) || /[?&]code=/.test(location.search);
 import { Sheet } from './kit';
 
 type Tab = 'today' | 'routines' | 'history';
@@ -66,16 +65,11 @@ export function App() {
 
   // Account: restore the session, follow sign-in/out.
   useEffect(() => {
-    const fromLink = linkInUrl();
-    if (!hasSavedSession() && !fromLink) return;
+    if (!hasSavedSession()) return;
     let off = () => undefined as void;
     void cloud().then(async (c) => {
       off = c.onAccountChange(setAccount);
-      if (fromLink) {
-        const { account: a, error } = await c.finishLinkSignIn();
-        if (a) void afterSignIn(a);
-        else if (error) showToast(t(error));
-      } else setAccount(await c.currentAccount());
+      setAccount(await c.currentAccount());
     });
     return () => off();
   }, []);
@@ -104,7 +98,8 @@ export function App() {
   const afterSignIn = async (a: Account) => {
     setAccount(a);
     setOpen(null);
-    showToast(t('welcomeBack'));
+    showToast(a.name ? t('welcomeName', { name: a.name }) : t('welcomeBack'));
+    if (a.name && store.db && !store.db.settings.name) void mutate((d) => { d.settings.name = a.name; });
     try {
       const remote = await (await cloud()).pullBackup();
       const local = store.db;

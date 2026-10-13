@@ -296,3 +296,15 @@ button, .row, .fab { transition: opacity .12s, transform .12s, background-color 
 /* Swipe: the action shows faintly, then solid once letting go would act. */
 .swipe-bg .swipe-act { opacity: .55; transition: opacity .12s, transform .12s; }
 .swipe-bg.armed .swipe-act { opacity: 1; transform: scale(1.06); }
+
+/* account form */
+.field-stack { background: var(--card); border-radius: var(--r); overflow: hidden; }
+.fl { display: grid; gap: 2px; padding: 10px 16px; border-bottom: 1px solid var(--sep); }
+.fl:last-child { border: 0; }
+.fl > span { font-size: 13px; color: var(--ink-2); }
+.fl input { border: 0; background: transparent; padding: 4px 0; font-size: 17px; width: 100%; min-width: 0; color: var(--ink); }
+.fl input:focus { outline: none; }
+.fl:focus-within > span { color: var(--accent); }
+.pw { display: flex; align-items: center; gap: 8px; }
+.pw .text-btn { font-size: 15px; flex-shrink: 0; }
+.center-self { justify-self: center; }

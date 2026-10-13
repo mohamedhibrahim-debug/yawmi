@@ -226,7 +226,7 @@ export function SettingsSheet(props: { db: DB; persist: PersistState | null; mut
       <div class="settings-list">
         {c.account ? (
           <>
-            <p class="set-note"><b>{t('signedInAs', { who: c.account.email ?? c.account.phone ?? '' })}</b><br />{c.lastBackup ? t('lastBackup', { when: whenLabel(c.lastBackup) }) : t('neverBackedUp')}. {t('autoBackup')}</p>
+            <p class="set-note"><b>{t('signedInAs', { who: c.account.name ? `${c.account.name} (${c.account.email ?? ''})` : c.account.email ?? '' })}</b><br />{c.lastBackup ? t('lastBackup', { when: whenLabel(c.lastBackup) }) : t('neverBackedUp')}. {t('autoBackup')}</p>
             <button class="set-row link-row" disabled={c.busy} onClick={c.onBackupNow}>{t('backupNow')}</button>
             <button class="set-row link-row" disabled={c.busy} onClick={c.onRestoreCloud}>{t('restoreCloud')}</button>
             <button class="set-row link-row danger-text" onClick={c.onSignOut}>{t('signOut')}</button>

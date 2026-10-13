@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import type { Account } from '../platform/cloud';
+import { locale, t } from '../i18n';
+import { Segmented, Sheet } from './kit';
 
 // The Supabase client loads only when someone actually signs in.
 const cloud = () => import('../platform/cloud');
-const isEmail = (s: string) => /^[^s@]+@[^s@]+.[^s@]{2,}$/.test(s.trim());
-import { locale, t } from '../i18n';
-import { Segmented, Sheet } from './kit';
+const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.trim());
+const MIN_PASSWORD = 8;
 
 export function whenLabel(iso: string): string {
   try {
@@ -15,90 +16,72 @@ export function whenLabel(iso: string): string {
   }
 }
 
-/** Email or mobile number → 6-digit code → signed in. */
-export function LoginSheet(props: { onDone: (a: Account) => void; onClose: () => void }) {
-  const [mode, setMode] = useState<'email' | 'phone'>('email');
-  const [contact, setContact] = useState('');
-  const [sent, setSent] = useState<{ kind: 'email' | 'phone'; to: string } | null>(null);
-  const [code, setCode] = useState('');
-  const [showCode, setShowCode] = useState(false);
+/** Standard account form: sign in with email + password, or create one with name, email, password. */
+export function LoginSheet(props: { initialMode?: 'signin' | 'signup'; onDone: (a: Account) => void; onClose: () => void }) {
+  const [mode, setMode] = useState<'signin' | 'signup'>(props.initialMode ?? 'signin');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const codeRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { if (sent && (sent.kind === 'phone' || showCode)) codeRef.current?.focus(); }, [sent, showCode]);
+  const valid = isEmail(email) && password.length >= (mode === 'signup' ? MIN_PASSWORD : 1) && (mode === 'signin' || name.trim().length > 0);
 
-  const fail = (e: unknown) => {
-    // A part of the app that an update replaced: reload to the new version instead of failing.
-    if (e instanceof TypeError && /module|import|fetch dynamically/i.test(e.message)) { location.reload(); return; }
-    setError(t(e instanceof Error && e.message && !e.message.includes(' ') ? e.message : 'loginFailed'));
-  };
-
-  const send = async () => {
+  const submit = async (e: Event) => {
+    e.preventDefault();
+    if (!valid || busy) return;
     setError(null);
     setBusy(true);
-    try { setSent(await (await cloud()).sendCode(contact)); } catch (e) { fail(e); }
+    try {
+      const c = await cloud();
+      props.onDone(mode === 'signup' ? await c.signUp(name, email, password) : await c.signIn(email, password));
+    } catch (err) {
+      // A part of the app that an update replaced: reload to the new version instead of failing.
+      if (err instanceof TypeError && /module|import|fetch dynamically/i.test(err.message)) { location.reload(); return; }
+      setError(t(err instanceof Error && err.message && !err.message.includes(' ') ? err.message : 'loginFailed'));
+    }
     setBusy(false);
-  };
-  const verify = async () => {
-    if (!sent) return;
-    setError(null);
-    setBusy(true);
-    try { props.onDone(await (await cloud()).verifyCode(sent.kind, sent.to, code)); } catch (e) { fail(e); }
-    setBusy(false);
-  };
-
-  // Typing an @ switches to email; typing digits switches to phone, so one box works for both.
-  const onContact = (v: string) => {
-    setContact(v);
-    if (v.includes('@')) setMode('email');
-    else if (/^[+0٠]?[\d٠-٩\s-]{3,}$/.test(v.trim())) setMode('phone');
   };
 
   return (
-    <Sheet title={t('loginTitle')} onClose={props.onClose}>
-      <div class="login">
+    <Sheet title={mode === 'signup' ? t('createAccount') : t('signIn')} onClose={props.onClose}>
+      <form class="login" onSubmit={submit} noValidate>
         <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" class="login-logo" />
-        {!sent ? (
-          <>
-            <p class="hint center-text">{t('loginBody')}</p>
-            <Segmented<'email' | 'phone'> label={t('contactPh')} value={mode} onChange={setMode}
-              options={[{ value: 'email', label: locale() === 'ar' ? 'إيميل' : 'Email' }, { value: 'phone', label: locale() === 'ar' ? 'موبايل' : 'Mobile' }]} />
-            <input class="login-input" value={contact} autoFocus
-              type={mode === 'email' ? 'email' : 'tel'} inputMode={mode === 'email' ? 'email' : 'tel'}
-              autoComplete={mode === 'email' ? 'email' : 'tel'} dir="ltr"
-              placeholder={mode === 'email' ? 'name@example.com' : '01012345678'} aria-label={t('contactPh')}
-              onInput={(e) => onContact(e.currentTarget.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') void send(); }} />
-            <button class="btn primary wide" disabled={busy || !contact.trim() || (mode === 'email' && !isEmail(contact))} onClick={() => void send()}>{t('sendCode')}</button>
-          </>
-        ) : (
-          <>
-            <p class="hint center-text">{sent.kind === 'email' ? t('codeSentEmail', { to: sent.to }) : t('codeSentPhone', { to: sent.to })}</p>
-            {sent.kind === 'email' && !showCode ? (
-              <button class="text-btn" onClick={() => setShowCode(true)}>{t('haveCode')}</button>
-            ) : (<>
-            <input ref={codeRef} class="login-input code" value={code} inputMode="numeric" autoComplete="one-time-code" maxLength={8} dir="ltr"
-              placeholder="••••••" aria-label={t('codePh')}
-              onInput={(e) => { const v = e.currentTarget.value; setCode(v); if (v.replace(/\D/g, '').length === 6) void verifyNow(v); }} />
-            <button class="btn primary wide" disabled={busy || code.replace(/\D/g, '').length < 6} onClick={() => void verify()}>{t('verify')}</button>
-            </>)}
-            <div class="login-links">
-              <button class="text-btn" onClick={() => { setSent(null); setCode(''); setError(null); }}>{t('changeContact')}</button>
-              <button class="text-btn" disabled={busy} onClick={() => void send()}>{t('resend')}</button>
+        <Segmented<'signin' | 'signup'> label={t('signIn')} value={mode} onChange={(m) => { setMode(m); setError(null); }}
+          options={[{ value: 'signin', label: t('signIn') }, { value: 'signup', label: t('createAccount') }]} />
+
+        <div class="field-stack">
+          {mode === 'signup' && (
+            <label class="fl">
+              <span>{t('yourName')}</span>
+              <input value={name} autoComplete="name" maxLength={40} onInput={(e) => setName(e.currentTarget.value)} />
+            </label>
+          )}
+          <label class="fl">
+            <span>{t('email')}</span>
+            <input type="email" inputMode="email" autoComplete={mode === 'signup' ? 'email' : 'username'} dir="ltr"
+              autoCapitalize="none" autoCorrect="off" spellcheck={false} value={email} onInput={(e) => setEmail(e.currentTarget.value)} />
+          </label>
+          <label class="fl">
+            <span>{t('password')}</span>
+            <div class="pw">
+              <input type={show ? 'text' : 'password'} dir="ltr" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                value={password} onInput={(e) => setPassword(e.currentTarget.value)} />
+              <button type="button" class="text-btn" onClick={() => setShow(!show)}>{show ? t('hide') : t('show')}</button>
             </div>
-          </>
-        )}
+          </label>
+        </div>
+        {mode === 'signup' && <p class="hint">{t('passwordHint', { n: MIN_PASSWORD })}</p>}
+
+        <button type="submit" class="btn primary wide" disabled={!valid || busy}>
+          {busy ? '…' : mode === 'signup' ? t('createAccount') : t('signIn')}
+        </button>
         {error && <p class="inline-error" role="alert">{error}</p>}
-      </div>
+        <button type="button" class="text-btn center-self" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null); }}>
+          {mode === 'signin' ? t('noAccount') : t('haveAccountShort')}
+        </button>
+      </form>
     </Sheet>
   );
-
-  async function verifyNow(v: string) {
-    if (!sent || busy) return;
-    setBusy(true);
-    setError(null);
-    try { props.onDone(await (await cloud()).verifyCode(sent.kind, sent.to, v)); } catch (e) { fail(e); }
-    setBusy(false);
-  }
 }
