@@ -8,6 +8,8 @@ import { alarmStatus } from '../platform/native';
 import type { PersistState } from '../storage/store';
 import { Chips, Icon, Segmented, Sheet, Toggle } from './kit';
 import { WeekStrip } from './Today';
+import { whenLabel } from './Account';
+import type { Account } from '../platform/cloud';
 
 type Mutate = (fn: (d: DB) => void, ok?: string) => Promise<boolean>;
 const EFFORTS = [5, 10, 15, 20, 30, 45, 60, 90, 120];
@@ -188,7 +190,10 @@ function AdjustSheet(props: { task: Task; date: DayKey; minutes: number; onSave:
 
 // ---------- settings ----------
 
-export function SettingsSheet(props: { db: DB; persist: PersistState | null; mutate: Mutate; onRestore: (db: DB) => Promise<void>; onClose: () => void; showToast: (s: string) => void }) {
+export interface CloudProps { account: Account | null; lastBackup: string | null; busy: boolean; onSignIn: () => void; onSignOut: () => void; onBackupNow: () => void; onRestoreCloud: () => void }
+
+export function SettingsSheet(props: { db: DB; persist: PersistState | null; mutate: Mutate; onRestore: (db: DB) => Promise<void>; onClose: () => void; showToast: (s: string) => void; cloud: CloudProps }) {
+  const c = props.cloud;
   const s = props.db.settings;
   const [pending, setPending] = useState<DB | null>(null);
   const [alarms, setAlarms] = useState<string | null>(null);
@@ -215,7 +220,25 @@ export function SettingsSheet(props: { db: DB; persist: PersistState | null; mut
 
   return (
     <Sheet tall title={t('settings')} onClose={props.onClose} leading={<span />} trailing={<button class="text-btn strong" onClick={props.onClose}>{t('ok')}</button>}>
-      <div class="brand-row"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><div><b>{t('appName')}</b><small>v0.2</small></div></div>
+      <div class="brand-row"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><div><b>{t('appName')}</b><small>v0.3</small></div></div>
+
+      <h3 class="list-label">{t('account')}</h3>
+      <div class="settings-list">
+        {c.account ? (
+          <>
+            <p class="set-note"><b>{t('signedInAs', { who: c.account.email ?? c.account.phone ?? '' })}</b><br />{c.lastBackup ? t('lastBackup', { when: whenLabel(c.lastBackup) }) : t('neverBackedUp')}. {t('autoBackup')}</p>
+            <button class="set-row link-row" disabled={c.busy} onClick={c.onBackupNow}>{t('backupNow')}</button>
+            <button class="set-row link-row" disabled={c.busy} onClick={c.onRestoreCloud}>{t('restoreCloud')}</button>
+            <button class="set-row link-row danger-text" onClick={c.onSignOut}>{t('signOut')}</button>
+          </>
+        ) : (
+          <button class="set-row account-row" onClick={c.onSignIn}>
+            <span class="avatar-dot" aria-hidden="true">👤</span>
+            <span class="grow-col"><b>{t('signIn')}</b><small>{t('signInSub')}</small></span>
+            <span aria-hidden="true">›</span>
+          </button>
+        )}
+      </div>
 
       <h3 class="list-label">{t('general')}</h3>
       <div class="settings-list">
@@ -265,7 +288,7 @@ export function SettingsSheet(props: { db: DB; persist: PersistState | null; mut
 
 // ---------- welcome (2 taps) ----------
 
-export function WelcomeSheet(props: { db: DB; onDone: (patch: Partial<DB['settings']>) => void }) {
+export function WelcomeSheet(props: { db: DB; onDone: (patch: Partial<DB['settings']>) => void; onSignIn: () => void }) {
   const [name, setName] = useState(props.db.settings.name);
   const [capacity, setCapacity] = useState(180);
   const finish = () => props.onDone({ name: name.trim(), capacity, onboarded: true });
@@ -280,6 +303,7 @@ export function WelcomeSheet(props: { db: DB; onDone: (patch: Partial<DB['settin
         <Segmented<string> label={t('dayKind')} value={String(capacity)} onChange={(v) => setCapacity(Number(v))}
           options={[{ value: '90', label: `${t('light')}${sep()}${dur(90)}` }, { value: '180', label: `${t('normal')}${sep()}${dur(180)}` }, { value: '300', label: `${t('heavy')}${sep()}${dur(300)}` }]} />
         <button class="btn primary wide" onClick={finish}>{t('start')}</button>
+        <button class="text-btn" onClick={() => { finish(); props.onSignIn(); }}>{t('haveAccount')}</button>
       </div>
     </Sheet>
   );

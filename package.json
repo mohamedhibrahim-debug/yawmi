@@ -23,6 +23,7 @@
     "@capacitor/haptics": "^7.0.5",
     "@capacitor/local-notifications": "^7.0.7",
     "@capacitor/status-bar": "^7.0.6",
+    "@supabase/supabase-js": "^2.117.3",
     "idb": "^8.0.4",
     "preact": "^10.29.8"
   },

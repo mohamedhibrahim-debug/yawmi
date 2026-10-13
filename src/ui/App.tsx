@@ -11,6 +11,13 @@ import { HistoryView, RoutinesView, SettingsSheet, WelcomeSheet } from './Screen
 import { TaskSheet } from './TaskSheet';
 import { NowStrip, TodayView, type RowActions } from './Today';
 import { useNow, useStore } from './useStore';
+import { LoginSheet, whenLabel } from './Account';
+import type { Account, CloudBackup } from '../platform/cloud';
+
+// Supabase loads lazily: only after a sign-in, or when a saved session exists.
+const cloud = () => import('../platform/cloud');
+const hasSavedSession = () => { try { return !!localStorage.getItem('yawmi-auth'); } catch { return false; } };
+import { Sheet } from './kit';
 
 type Tab = 'today' | 'routines' | 'history';
 const readTab = (): Tab => {
@@ -23,7 +30,11 @@ type Open =
   | { kind: 'task'; id: string }
   | { kind: 'new'; initial: Partial<TaskFields> }
   | { kind: 'settings' }
+  | { kind: 'login' }
   | null;
+
+const LAST_BACKUP_KEY = 'yawmi-last-backup';
+const readLast = () => { try { return localStorage.getItem(LAST_BACKUP_KEY); } catch { return null; } };
 
 export function App() {
   const store = useStore();
@@ -36,10 +47,58 @@ export function App() {
   const now = useNow(hasTimers ? 1000 : 30_000);
   const today = db ? todayKey(db.settings.zone, now) : null;
   const alerted = useRef(new Set<string>());
+  const [account, setAccount] = useState<Account | null>(null);
+  const [lastBackup, setLastBackup] = useState<string | null>(readLast);
+  const [cloudBusy, setCloudBusy] = useState(false);
+  const [restoreOffer, setRestoreOffer] = useState<CloudBackup | null>(null);
+  const backupTimer = useRef<number>();
 
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
     onRegisteredSW(_u, reg) { if (reg) setInterval(() => void reg.update().catch(() => undefined), 60 * 60_000); }
   });
+
+  // Account: restore the session, follow sign-in/out.
+  useEffect(() => {
+    if (!hasSavedSession()) return;
+    let off = () => undefined as void;
+    void cloud().then((c) => { void c.currentAccount().then(setAccount); off = c.onAccountChange(setAccount); });
+    return () => off();
+  }, []);
+
+  const backup = async (silent: boolean) => {
+    if (!account || !store.db) return;
+    try {
+      const at = await (await cloud()).pushBackup(store.db);
+      setLastBackup(at);
+      try { localStorage.setItem(LAST_BACKUP_KEY, at); } catch { /* optional */ }
+      if (!silent) showToast(t('backedUp'));
+    } catch (e) {
+      if (!silent) showToast(t(e instanceof Error ? e.message : 'saveFailed'));
+    }
+  };
+
+  // Automatic cloud backup a few seconds after each change, when signed in.
+  useEffect(() => {
+    if (!account || !db) return;
+    window.clearTimeout(backupTimer.current);
+    backupTimer.current = window.setTimeout(() => void backup(true), 4000);
+    return () => window.clearTimeout(backupTimer.current);
+  }, [account?.id, db?.revision]);
+
+  /** After signing in: an empty phone restores the cloud copy; otherwise ask. */
+  const afterSignIn = async (a: Account) => {
+    setAccount(a);
+    setOpen(null);
+    showToast(t('welcomeBack'));
+    try {
+      const remote = await (await cloud()).pullBackup();
+      const local = store.db;
+      const localEmpty = !local || (local.tasks.length === 0 && local.routines.length === 0);
+      if (remote && localEmpty) { await store.replace({ ...remote.db, settings: { ...remote.db.settings, onboarded: true } }); showToast(t('restored')); }
+      else if (remote) setRestoreOffer(remote);
+      else void backup(true);
+    } catch { /* offline: backup will retry on next change */ }
+  };
 
   useEffect(() => {
     setupNativeShell();
@@ -153,7 +212,15 @@ export function App() {
         </div>
       )}
 
-      {!db.settings.onboarded && <WelcomeSheet db={db} onDone={(patch) => void mutate((d) => { d.settings = { ...d.settings, ...patch, onboarded: true }; })} />}
+      {!db.settings.onboarded && <WelcomeSheet db={db} onSignIn={() => setOpen({ kind: 'login' })} onDone={(patch) => void mutate((d) => { d.settings = { ...d.settings, ...patch, onboarded: true }; })} />}
+      {open?.kind === 'login' && <LoginSheet onClose={() => setOpen(null)} onDone={(a) => void afterSignIn(a)} />}
+      {restoreOffer && (
+        <Sheet title={t('restoreCloud')} onClose={() => setRestoreOffer(null)} leading={<span />}>
+          <p>{t('cloudRestoreAsk', { when: whenLabel(restoreOffer.updatedAt) })}</p>
+          <button class="btn primary wide" onClick={async () => { await store.replace({ ...restoreOffer.db, settings: { ...restoreOffer.db.settings, onboarded: true } }); setRestoreOffer(null); showToast(t('restored')); }}>{t('restoreYes')}</button>
+          <button class="text-btn" onClick={() => { setRestoreOffer(null); void backup(true); }}>{t('restoreNo')}</button>
+        </Sheet>
+      )}
 
       {open?.kind === 'add' && (
         <AddSheet today={today} listenNow={open.listen} onAdd={addReady} onClose={() => setOpen(null)}
@@ -177,6 +244,13 @@ export function App() {
       )}
       {open?.kind === 'settings' && (
         <SettingsSheet db={db} persist={store.persist} mutate={mutate} showToast={showToast} onClose={() => setOpen(null)}
+          cloud={{
+            account, lastBackup, busy: cloudBusy,
+            onSignIn: () => setOpen({ kind: 'login' }),
+            onSignOut: () => { void cloud().then((c) => c.signOut()).then(() => { setAccount(null); showToast(t('signOut')); }); },
+            onBackupNow: () => { setCloudBusy(true); void backup(false).finally(() => setCloudBusy(false)); },
+            onRestoreCloud: () => { setCloudBusy(true); void cloud().then((c) => c.pullBackup()).then((c) => { if (c) setRestoreOffer(c); else showToast(t('neverBackedUp')); }).catch(() => showToast(t('offline'))).finally(() => setCloudBusy(false)); }
+          }}
           onRestore={async (next) => { await store.replace(next); showToast(t('restored')); }} />
       )}
     </div>

@@ -243,3 +243,17 @@ button.subtitle:not(:disabled)::after { content: " ›"; color: var(--accent); f
 .welcome p { margin: 0; color: var(--ink-2); max-width: 30ch; }
 .welcome h3 { margin: 6px 0 -4px; font-size: 15px; color: var(--ink-2); font-weight: 600; }
 .welcome .segmented { width: 100%; }
+
+/* login & account */
+.login { display: grid; gap: 14px; justify-items: stretch; padding: 4px 0 8px; }
+.login-logo { width: 64px; height: 64px; border-radius: 16px; justify-self: center; }
+.center-text { text-align: center; }
+.login-input { border: 0; background: var(--card); border-radius: var(--r); padding: 15px 16px; font-size: 18px; text-align: center; }
+.login-input.code { font-size: 28px; letter-spacing: 10px; font-variant-numeric: tabular-nums; }
+.login-links { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.account-row { justify-content: flex-start; gap: 12px; color: var(--ink); }
+.account-row > span:last-child { color: var(--ink-3); font-size: 22px; }
+.avatar-dot { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+.grow-col { flex: 1; display: grid; gap: 2px; text-align: start; }
+.grow-col small { color: var(--ink-2); font-size: 13px; }
+.danger-text { color: var(--danger); }

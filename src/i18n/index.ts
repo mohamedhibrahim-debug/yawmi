@@ -65,7 +65,18 @@ const ar = {
   waitRange: 'الانتظار لازم يكون لحد {max} دقيقة', badCategory: 'القسم مش معروف', badPeriod: 'الوقت مش معروف',
   notesTooLong: 'الملاحظات أطول من {max} حرف', badDate: 'التاريخ غير صحيح', badMinutes: 'اكتبي عدد دقايق صحيح', pickDay: 'اختاري يوم واحد على الأقل',
   saveFailed: 'ما قدرناش نحفظ. جربي تاني.', conflict: 'اتعدلت البيانات من مكان تاني. حدّثنا الصفحة.', storageFull: 'مساحة الموبايل خلصت. التعديل ما اتحفظش.',
-  storageBlocked: 'المتصفح ده مش سامح بحفظ البيانات.'
+  storageBlocked: 'المتصفح ده مش سامح بحفظ البيانات.',
+  account: 'الحساب', signIn: 'تسجيل الدخول', signInSub: 'عشان بياناتك تتحفظ لو الموبايل ضاع أو اتغيّر',
+  loginTitle: 'تسجيل الدخول', loginBody: 'اكتبي إيميلك أو رقم موبايلك، وهنبعتلك كود من ٦ أرقام.',
+  contactPh: 'الإيميل أو رقم الموبايل', sendCode: 'ابعتي الكود', codeSentEmail: 'بعتنا كود على {to}', codeSentPhone: 'بعتنا رسالة على {to}',
+  codePh: 'الكود', verify: 'دخول', changeContact: 'غيّري الإيميل أو الرقم', resend: 'ابعتي تاني',
+  continueWithout: 'كمّلي من غير حساب', haveAccount: 'عندك حساب؟ سجّلي دخول',
+  signedInAs: 'داخلة بـ {who}', signOut: 'تسجيل خروج', backupNow: 'احفظي نسخة دلوقتي', restoreCloud: 'رجّعي آخر نسخة من السحابة',
+  lastBackup: 'آخر نسخة: {when}', neverBackedUp: 'لسه مفيش نسخة على السحابة', autoBackup: 'بنحفظ نسخة لوحدنا بعد كل تعديل.',
+  backedUp: 'اتحفظت على السحابة', cloudRestoreAsk: 'لقينا نسخة من {when} على حسابك. نرجّعها على الموبايل ده؟', restoreYes: 'رجّعيها', restoreNo: 'لأ، خلّي اللي هنا',
+  welcomeBack: 'أهلًا بيكي تاني',
+  phoneUnavailable: 'الدخول برقم الموبايل لسه مش متاح. استخدمي الإيميل دلوقتي.', tooMany: 'استني دقيقة وجربي تاني.', badCode: 'الكود غلط أو انتهى. جربي تاني.',
+  offline: 'مفيش نت. جربي تاني لما النت يرجع.', loginFailed: 'ما قدرناش ندخلك. جربي تاني.', badContact: 'اكتبي إيميل صحيح أو رقم موبايل زي ٠١٠١٢٣٤٥٦٧٨', signedOut: 'سجّلي دخول الأول.',
 };
 
 type Dict = typeof ar;
@@ -130,7 +141,18 @@ const en: Dict = {
   waitRange: 'Waiting time can be up to {max} minutes', badCategory: 'Unknown category', badPeriod: 'Unknown time of day',
   notesTooLong: 'Notes are longer than {max} characters', badDate: 'Invalid date', badMinutes: 'Enter a valid number of minutes', pickDay: 'Pick at least one day',
   saveFailed: "Couldn't save. Try again.", conflict: 'Your data changed somewhere else. Reloaded.', storageFull: 'Phone storage is full. The change was not saved.',
-  storageBlocked: "This browser doesn't allow saving data."
+  storageBlocked: "This browser doesn't allow saving data.",
+  account: 'Account', signIn: 'Sign in', signInSub: 'So your data is safe if you lose or change your phone',
+  loginTitle: 'Sign in', loginBody: "Enter your email or mobile number and we'll send you a 6-digit code.",
+  contactPh: 'Email or mobile number', sendCode: 'Send code', codeSentEmail: 'We sent a code to {to}', codeSentPhone: 'We texted a code to {to}',
+  codePh: 'Code', verify: 'Sign in', changeContact: 'Use a different email or number', resend: 'Send again',
+  continueWithout: 'Continue without an account', haveAccount: 'Have an account? Sign in',
+  signedInAs: 'Signed in as {who}', signOut: 'Sign out', backupNow: 'Back up now', restoreCloud: 'Restore latest cloud backup',
+  lastBackup: 'Last backup: {when}', neverBackedUp: 'No cloud backup yet', autoBackup: 'We back up automatically after each change.',
+  backedUp: 'Backed up to the cloud', cloudRestoreAsk: 'We found a backup from {when} on your account. Restore it on this phone?', restoreYes: 'Restore', restoreNo: "No, keep this phone's data",
+  welcomeBack: 'Welcome back',
+  phoneUnavailable: "Sign-in by mobile number isn't available yet. Please use email for now.", tooMany: 'Please wait a minute and try again.', badCode: 'That code is wrong or expired. Try again.',
+  offline: "You're offline. Try again when you're connected.", loginFailed: "Couldn't sign you in. Try again.", badContact: 'Enter a valid email or a mobile number like 01012345678', signedOut: 'Please sign in first.',
 };
 
 const DICTS: Record<Locale, Dict> = { ar, en };
