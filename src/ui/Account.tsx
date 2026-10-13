@@ -78,6 +78,7 @@ export function LoginSheet(props: { onDone: (a: Account) => void; onClose: () =>
               placeholder="••••••" aria-label={t('codePh')}
               onInput={(e) => { const v = e.currentTarget.value; setCode(v); if (v.replace(/\D/g, '').length === 6) void verifyNow(v); }} />
             <button class="btn primary wide" disabled={busy || code.replace(/\D/g, '').length < 6} onClick={() => void verify()}>{t('verify')}</button>
+            </>)}
             <div class="login-links">
               <button class="text-btn" onClick={() => { setSent(null); setCode(''); setError(null); }}>{t('changeContact')}</button>
               <button class="text-btn" disabled={busy} onClick={() => void send()}>{t('resend')}</button>
