@@ -257,3 +257,42 @@ button.subtitle:not(:disabled)::after { content: " ›"; color: var(--accent); f
 .grow-col { flex: 1; display: grid; gap: 2px; text-align: start; }
 .grow-col small { color: var(--ink-2); font-size: 13px; }
 .danger-text { color: var(--danger); }
+
+/* ---------- touch & scroll polish (iPhone) ---------- */
+/* No double-tap zoom: quick repeated taps on chips must never zoom the page. */
+html { touch-action: manipulation; overscroll-behavior-y: none; }
+body { overflow-x: hidden; }
+/* While a sheet is open, the page behind it doesn't scroll or bounce. */
+html:has(dialog[open]) { overflow: hidden; }
+.sheet-body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+/* Long-press on controls shouldn't select text or open the copy menu. */
+button, .row, .wday, .chip, .pill, .tabbar, .fab, .now-item, .group-head, .tpl, .segmented, .switch {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+input, textarea { -webkit-user-select: text; user-select: text; }
+/* iPhone zooms the page into any field under 16px; keep every field at 16px or more. */
+input, textarea, select { font-size: max(16px, 1em); }
+.date-input { font-size: 16px; min-height: 44px; }
+
+/* Bigger touch targets without changing the look. */
+.check { position: relative; }
+.check::before { content: ""; position: absolute; inset: -14px; }
+.text-btn { min-height: 44px; padding-inline: 6px; }
+.now-main { min-height: 44px; }
+.icon-btn { width: 44px; height: 44px; }
+.chip { min-height: 40px; }
+.segmented button { min-height: 36px; }
+
+/* Visible feedback on press, since the grey iOS tap flash is off. */
+@media (hover: none) {
+  button:not(.row-main):not(:disabled):active { opacity: .55; }
+  .row:active { background: color-mix(in srgb, var(--card) 82%, var(--ink-3)); }
+  .row.running:active { background: color-mix(in srgb, var(--accent-soft) 80%, var(--ink-3)); }
+  .fab:active { transform: scale(.94); opacity: 1; }
+  .tpl:active, .action:active { transform: scale(.98); }
+}
+button, .row, .fab { transition: opacity .12s, transform .12s, background-color .12s; }
+
+/* Swipe: the action shows faintly, then solid once letting go would act. */
+.swipe-bg .swipe-act { opacity: .55; transition: opacity .12s, transform .12s; }
+.swipe-bg.armed .swipe-act { opacity: 1; transform: scale(1.06); }

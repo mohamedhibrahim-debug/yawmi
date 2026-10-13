@@ -44,34 +44,42 @@ function TaskRow(props: { task: Task; db: DB; now: number; actions: RowActions; 
   const waiting = db.waits.find((w) => w.taskId === task.id);
   const isDone = task.status === 'done';
   const [dx, setDx] = useState(0);
-  const start = useRef<{ x: number; y: number; id: number } | null>(null);
+  // One gesture is either a scroll or a swipe, decided once from its first clear movement.
+  const gesture = useRef<{ x: number; y: number; id: number; mode: 'undecided' | 'swipe' | 'scroll'; armed: boolean } | null>(null);
   const moved = useRef(false);
-  const W = 88;
+  const TRIGGER = 110; // px a swipe must travel before letting go acts
 
   // Leading swipe = start timer, trailing swipe = tomorrow. Mirrors in RTL.
   const onDown = (e: PointerEvent) => {
-    if (props.preview || isDone) return;
-    start.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
     moved.current = false;
+    if (props.preview || isDone || e.pointerType === 'mouse' && e.button !== 0) return;
+    gesture.current = { x: e.clientX, y: e.clientY, id: e.pointerId, mode: 'undecided', armed: false };
   };
   const onMove = (e: PointerEvent) => {
-    const s = start.current;
-    if (!s) return;
-    const ddx = e.clientX - s.x;
-    if (!moved.current && Math.abs(e.clientY - s.y) > 10 && Math.abs(ddx) < 10) { start.current = null; return; }
-    if (Math.abs(ddx) > 8) {
-      moved.current = true;
-      (e.currentTarget as HTMLElement).setPointerCapture?.(s.id);
-      setDx(Math.max(-W * 1.4, Math.min(W * 1.4, ddx)));
+    const g = gesture.current;
+    if (!g || g.mode === 'scroll') return;
+    const ddx = e.clientX - g.x;
+    const ddy = e.clientY - g.y;
+    if (g.mode === 'undecided') {
+      if (Math.abs(ddy) > 8 && Math.abs(ddy) >= Math.abs(ddx) * 0.6) { g.mode = 'scroll'; moved.current = true; return; }
+      if (Math.abs(ddx) > 16 && Math.abs(ddx) > Math.abs(ddy) * 2) {
+        g.mode = 'swipe';
+        moved.current = true;
+        (e.currentTarget as HTMLElement).setPointerCapture?.(g.id);
+      } else return;
     }
+    const shown = ddx - Math.sign(ddx) * 16;
+    const clamped = Math.max(-TRIGGER * 1.3, Math.min(TRIGGER * 1.3, shown));
+    const armed = Math.abs(clamped) >= TRIGGER;
+    if (armed !== g.armed) { g.armed = armed; if (armed) tap(); } // a tick when letting go would act
+    setDx(clamped);
   };
   const onUp = () => {
-    const s = start.current;
-    start.current = null;
-    if (!s) return;
+    const g = gesture.current;
+    gesture.current = null;
+    if (!g || g.mode !== 'swipe') { setDx(0); return; }
     const leading = isRTL() ? dx < 0 : dx > 0;
-    if (Math.abs(dx) > W * 0.8) {
-      tap();
+    if (Math.abs(dx) >= TRIGGER) {
       if (leading) actions.start(task);
       else actions.tomorrow(task);
     }
@@ -91,14 +99,14 @@ function TaskRow(props: { task: Task; db: DB; now: number; actions: RowActions; 
   return (
     <li class={`row-wrap${props.preview ? ' preview' : ''}`}>
       {dx !== 0 && (
-        <div class="swipe-bg" style={{ justifyContent: (dx > 0) ? 'flex-start' : 'flex-end' }}>
+        <div class={`swipe-bg${Math.abs(dx) >= TRIGGER ? ' armed' : ''}`} style={{ justifyContent: (dx > 0) ? 'flex-start' : 'flex-end' }}>
           {((dx > 0 && leadingSide === 'left') || (dx < 0 && leadingSide === 'right'))
             ? <span class="swipe-act start"><Icon name="play" size={20} />{t('swipeStart')}</span>
             : <span class="swipe-act later">{t('swipeTomorrow')}</span>}
         </div>
       )}
       <div class={`row${isDone ? ' done' : ''}${running ? ' running' : ''}`} style={{ transform: dx ? `translateX(${dx}px)` : undefined }}
-        onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={() => { start.current = null; setDx(0); }}>
+        onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={() => { gesture.current = null; setDx(0); }}>
         {props.preview ? (
           <span class="check ghost" aria-hidden="true">↻</span>
         ) : (
