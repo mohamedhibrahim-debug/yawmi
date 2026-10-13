@@ -17,6 +17,7 @@ import type { Account, CloudBackup } from '../platform/cloud';
 // Supabase loads lazily: only after a sign-in, or when a saved session exists.
 const cloud = () => import('../platform/cloud');
 const hasSavedSession = () => { try { return !!localStorage.getItem('yawmi-auth'); } catch { return false; } };
+const linkInUrl = () => /access_token=|refresh_token=|error_description=/.test(location.hash) || /[?&]code=/.test(location.search);
 import { Sheet } from './kit';
 
 type Tab = 'today' | 'routines' | 'history';
@@ -59,9 +60,17 @@ export function App() {
 
   // Account: restore the session, follow sign-in/out.
   useEffect(() => {
-    if (!hasSavedSession()) return;
+    const fromLink = linkInUrl();
+    if (!hasSavedSession() && !fromLink) return;
     let off = () => undefined as void;
-    void cloud().then((c) => { void c.currentAccount().then(setAccount); off = c.onAccountChange(setAccount); });
+    void cloud().then(async (c) => {
+      off = c.onAccountChange(setAccount);
+      if (fromLink) {
+        const { account: a, error } = await c.finishLinkSignIn();
+        if (a) void afterSignIn(a);
+        else if (error) showToast(t(error));
+      } else setAccount(await c.currentAccount());
+    });
     return () => off();
   }, []);
 

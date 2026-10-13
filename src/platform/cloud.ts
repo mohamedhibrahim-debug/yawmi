@@ -8,6 +8,14 @@ import { validate } from '../domain/io';
 const URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://lsnyoyuombdqmbtzuxrz.supabase.co';
 const KEY = import.meta.env.VITE_SUPABASE_KEY ?? 'sb_publishable_cc-eVV_LUAz-SFujyZ434w_N4QcO--E';
 
+/** Where the email link brings people back: this web app when served over https, else the public web app. */
+const PUBLIC_APP = 'https://mohamedhibrahim-debug.github.io/yawmi/';
+export function appUrl(): string {
+  const { protocol, hostname, origin } = location;
+  if (protocol === 'https:' && hostname !== 'localhost') return origin + import.meta.env.BASE_URL;
+  return PUBLIC_APP;
+}
+
 let client: SupabaseClient | null = null;
 function sb(): SupabaseClient {
   client ??= createClient(URL, KEY, {
@@ -61,7 +69,7 @@ function mapError(message: string): CloudError {
 export async function sendCode(who: string): Promise<{ kind: 'email' | 'phone'; to: string }> {
   if (isEmail(who)) {
     const email = who.trim().toLowerCase();
-    const { error } = await sb().auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+    const { error } = await sb().auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: appUrl() } });
     if (error) throw mapError(error.message);
     return { kind: 'email', to: email };
   }
@@ -79,6 +87,17 @@ export async function verifyCode(kind: 'email' | 'phone', to: string, code: stri
     : await sb().auth.verifyOtp({ phone: to, token, type: 'sms' });
   if (error || !data.session) throw mapError(error?.message ?? 'invalid');
   return toAccount(data.session)!;
+}
+
+/** True when the page was opened from a sign-in email link. */
+export const authInUrl = () => /access_token=|refresh_token=|error_description=/.test(location.hash) || /[?&]code=/.test(location.search);
+
+/** Finishes a sign-in from an email link: the client reads the tokens from the URL; then the URL is cleaned. */
+export async function finishLinkSignIn(): Promise<{ account: Account | null; error: string | null }> {
+  const err = new URLSearchParams(location.hash.slice(1)).get('error_description') ?? new URLSearchParams(location.search).get('error_description');
+  const { data } = await sb().auth.getSession();
+  history.replaceState(null, '', location.pathname + '#today');
+  return { account: toAccount(data.session), error: err ? 'badCode' : null };
 }
 
 export async function signOut(): Promise<void> {
