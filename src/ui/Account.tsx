@@ -28,7 +28,11 @@ export function LoginSheet(props: { onDone: (a: Account) => void; onClose: () =>
 
   useEffect(() => { if (sent && (sent.kind === 'phone' || showCode)) codeRef.current?.focus(); }, [sent, showCode]);
 
-  const fail = (e: unknown) => setError(t(e instanceof Error && e.name !== 'TypeError' && e.message && !e.message.includes(' ') ? e.message : 'loginFailed'));
+  const fail = (e: unknown) => {
+    // A part of the app that an update replaced: reload to the new version instead of failing.
+    if (e instanceof TypeError && /module|import|fetch dynamically/i.test(e.message)) { location.reload(); return; }
+    setError(t(e instanceof Error && e.message && !e.message.includes(' ') ? e.message : 'loginFailed'));
+  };
 
   const send = async () => {
     setError(null);
