@@ -21,11 +21,12 @@ export function LoginSheet(props: { onDone: (a: Account) => void; onClose: () =>
   const [contact, setContact] = useState('');
   const [sent, setSent] = useState<{ kind: 'email' | 'phone'; to: string } | null>(null);
   const [code, setCode] = useState('');
+  const [showCode, setShowCode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const codeRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { if (sent) codeRef.current?.focus(); }, [sent]);
+  useEffect(() => { if (sent && (sent.kind === 'phone' || showCode)) codeRef.current?.focus(); }, [sent, showCode]);
 
   const fail = (e: unknown) => setError(t(e instanceof Error && e.name !== 'TypeError' && e.message && !e.message.includes(' ') ? e.message : 'loginFailed'));
 
@@ -70,6 +71,9 @@ export function LoginSheet(props: { onDone: (a: Account) => void; onClose: () =>
         ) : (
           <>
             <p class="hint center-text">{sent.kind === 'email' ? t('codeSentEmail', { to: sent.to }) : t('codeSentPhone', { to: sent.to })}</p>
+            {sent.kind === 'email' && !showCode ? (
+              <button class="text-btn" onClick={() => setShowCode(true)}>{t('haveCode')}</button>
+            ) : (<>
             <input ref={codeRef} class="login-input code" value={code} inputMode="numeric" autoComplete="one-time-code" maxLength={8} dir="ltr"
               placeholder="••••••" aria-label={t('codePh')}
               onInput={(e) => { const v = e.currentTarget.value; setCode(v); if (v.replace(/\D/g, '').length === 6) void verifyNow(v); }} />
