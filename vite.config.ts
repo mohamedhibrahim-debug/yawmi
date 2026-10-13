@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
       preact(),
       !artifact &&
         VitePWA({
-          registerType: 'prompt',
+          registerType: 'autoUpdate',
           includeAssets: ['icon.svg', 'logo.svg'],
           manifest: {
             name: 'يومي · Yawmi',
@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
               { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml' }
             ]
           },
-          workbox: { globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'] }
+          workbox: { globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'], clientsClaim: true, skipWaiting: true }
         })
     ],
     test: { environment: 'node', include: ['tests/**/*.test.ts'] }

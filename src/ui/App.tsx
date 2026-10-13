@@ -55,7 +55,13 @@ export function App() {
   const backupTimer = useRef<number>();
 
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
-    onRegisteredSW(_u, reg) { if (reg) setInterval(() => void reg.update().catch(() => undefined), 60 * 60_000); }
+    onRegisteredSW(_u, reg) {
+      if (!reg) return;
+      // Check for a new version hourly and whenever the app comes back to the front; it installs itself.
+      const check = () => void reg.update().catch(() => undefined);
+      setInterval(check, 60 * 60_000);
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
+    }
   });
 
   // Account: restore the session, follow sign-in/out.
