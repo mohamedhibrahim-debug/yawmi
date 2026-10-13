@@ -1,0 +1,326 @@
+<title>Yawmi Market Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a research dossier. Verdict first, then evidence sections with a sticky section index on wide screens. */
+:root {
+  --bg: #f5f7f2; --surface: #ffffff; --ink: #203b34; --muted: #5d7066; --line: #dde6dc;
+  --green: #28574a; --mist: #e4ece3; --peach: #f3dcc2; --amber: #9a5a1c; --red: #a3342b; --ok: #2e7d4f;
+  --amber-bg: #fbefe3; --red-bg: #f8e5e2; --ok-bg: #e3f1e7;
+  --display: "Readex Pro", "Segoe UI", Tahoma, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121a17; --surface: #1a2420; --ink: #e3ece6; --muted: #9db1a6; --line: #2c3a34;
+  --green: #7fc4a9; --mist: #22322b; --peach: #4a3a28; --amber: #e0a35d; --red: #f08a7e; --ok: #7fd19d;
+  --amber-bg: #3a2c1c; --red-bg: #3b2220; --ok-bg: #1d3226; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #121a17; --surface: #1a2420; --ink: #e3ece6; --muted: #9db1a6; --line: #2c3a34;
+  --green: #7fc4a9; --mist: #22322b; --peach: #4a3a28; --amber: #e0a35d; --red: #f08a7e; --ok: #7fd19d;
+  --amber-bg: #3a2c1c; --red-bg: #3b2220; --ok-bg: #1d3226; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15.5px/1.65 var(--body); margin: 0; }
+a { color: var(--green); text-underline-offset: 2px; }
+a:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.page { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 72px; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 40px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; display: grid; gap: 4px; font-size: 13px; }
+nav.toc a { color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: 6px; }
+nav.toc a:hover { background: var(--mist); color: var(--ink); }
+main { display: grid; gap: 44px; min-width: 0; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.15; letter-spacing: -.5px; }
+h1 .ar { color: var(--green); }
+h2 { font-size: 24px; margin-bottom: 4px; }
+h3 { font-size: 17px; }
+p { margin: 0; max-width: 72ch; }
+.label { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 16px; scroll-margin-top: 20px; }
+.lede { color: var(--muted); font-size: 16.5px; }
+header { display: grid; gap: 12px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 2px 11px; font-size: 12px; color: var(--muted); }
+
+.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px; display: grid; gap: 14px; }
+.verdict .big { font: 600 20px/1.4 var(--display); max-width: 60ch; }
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tile { border-radius: 14px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.tile.ok { background: var(--ok-bg); } .tile.warn { background: var(--amber-bg); } .tile.bad { background: var(--red-bg); }
+.tile h3 { font-size: 15px; }
+.tile.ok h3 { color: var(--ok); } .tile.warn h3 { color: var(--amber); } .tile.bad h3 { color: var(--red); }
+.tile ul { margin: 0; padding-left: 18px; font-size: 14px; display: grid; gap: 4px; }
+
+.stat { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.stat div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 2px; }
+.stat strong { font: 700 28px var(--display); color: var(--green); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--muted); }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font: 600 12px var(--body); color: var(--muted); background: var(--mist); position: sticky; top: 0; }
+tr:last-child td { border-bottom: 0; }
+td.c { text-align: center; white-space: nowrap; }
+.matrix th:not(:first-child), .matrix td:not(:first-child) { text-align: center; }
+.matrix td:first-child { white-space: nowrap; }
+.matrix .y { color: var(--ok); font-weight: 600; } .matrix .p { color: var(--amber); } .matrix .n { color: var(--muted); opacity: .6; }
+.matrix .us { background: var(--mist); font-weight: 600; }
+
+ol.ranked { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
+ol.ranked li { padding-left: 4px; }
+ol.ranked .tag, .sev { display: inline-block; font: 500 11px var(--mono); border-radius: 6px; padding: 1px 7px; margin-left: 6px; vertical-align: 1px; }
+.tag.have { background: var(--ok-bg); color: var(--ok); } .tag.gap { background: var(--amber-bg); color: var(--amber); } .tag.later { background: var(--mist); color: var(--muted); }
+.sev.crit { background: var(--red-bg); color: var(--red); } .sev.high { background: var(--amber-bg); color: var(--amber); } .sev.med { background: var(--mist); color: var(--muted); }
+
+.patterns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pattern { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.pattern .who { font: 500 12px var(--mono); color: var(--muted); }
+.pattern p { font-size: 14px; }
+.issues { display: grid; gap: 10px; }
+.issue { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding-block: 10px; border-top: 1px solid var(--line); }
+.issue:first-child { border-top: 0; }
+.issue p { font-size: 14.5px; }
+.issue .fix { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+.callout { border-left: 3px solid var(--amber); background: var(--amber-bg); border-radius: 0 12px 12px 0; padding: 12px 16px; font-size: 14.5px; }
+.corrections { display: grid; gap: 8px; }
+.corr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 14px; }
+.corr .was { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--red); }
+.tests td:nth-child(3), .tests td:nth-child(4) { font-size: 13px; }
+.steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
+.steps strong { font-family: var(--display); }
+footer { color: var(--muted); font-size: 12.5px; display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 18px; }
+
+@media (max-width: 900px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  nav.toc { position: static; display: flex; flex-wrap: wrap; gap: 4px; }
+  .three, .patterns { grid-template-columns: minmax(0, 1fr); }
+  .stat { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .corr { grid-template-columns: minmax(0, 1fr); }
+  .issue { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
+</style>
+
+<div class="page">
+  <nav class="toc" aria-label="Sections">
+    <span class="label" style="padding:4px 8px">Contents</span>
+    <a href="#verdict">Bottom line</a>
+    <a href="#landscape">Market landscape</a>
+    <a href="#matrix">Feature matrix</a>
+    <a href="#valued">What users value</a>
+    <a href="#whitespace">White space</a>
+    <a href="#ux">UX patterns</a>
+    <a href="#audit">MVP UX audit</a>
+    <a href="#devil">Devil's advocate</a>
+    <a href="#tests">Killer assumptions</a>
+    <a href="#next">What to do next</a>
+  </nav>
+
+  <main>
+    <header>
+      <span class="label">Research dossier · October 2026 · three agents</span>
+      <h1>Yawmi <span class="ar">يومي</span> market research</h1>
+      <p class="lede">How household, family and gentle day planners compete today, which features and UX patterns users actually value, how the Yawmi MVP measures up, and what a devil's advocate found wrong with all of it.</p>
+      <div class="meta">
+        <span class="chip">Market researcher · 44 searches</span>
+        <span class="chip">UX/UI expert · code audit + 22 patterns</span>
+        <span class="chip">Devil's advocate · independent verification</span>
+      </div>
+    </header>
+
+    <section id="verdict" class="verdict" aria-labelledby="v-h">
+      <span class="label" id="v-h">Bottom line</span>
+      <p class="big">The gap is real: no Arabic-native, Egyptian-voiced household planner has traction. But nobody has yet asked a real Egyptian woman whether she will open a planner daily, or whether "effort minutes" make sense to her. Test that in two weeks before building anything else.</p>
+      <div class="three">
+        <div class="tile ok"><h3>Holds up</h3><ul>
+          <li>No Arabic-native household planner with traction</li>
+          <li>Egyptian women do 5.4 hours a day of unpaid care and domestic work</li>
+          <li>"Waiting time" exists in no competitor</li>
+          <li>Android-first and a light app fit the market</li>
+        </ul></div>
+        <div class="tile warn"><h3>Unproven</h3><ul>
+          <li>She will use a planner daily instead of WhatsApp, paper or memory</li>
+          <li>"Effort minutes" and a daily capacity are understood</li>
+          <li>Anyone will pay, at any price</li>
+          <li>A web link alone can reach her</li>
+        </ul></div>
+        <div class="tile bad"><h3>Broken or risky</h3><ul>
+          <li>Reliable alerts when the app is closed need a server, which clashes with "no account"</li>
+          <li>Two codebases of the same app</li>
+          <li>Ticking a washing task done cancels its countdown</li>
+          <li>Unfinished tasks from past days vanish</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="landscape" aria-labelledby="l-h">
+      <h2 id="l-h">Market landscape</h2>
+      <p>Five groups of apps compete for the same daily attention. None of them was built for an Arabic-speaking household, and the ones closest in spirit are English-only.</p>
+      <div class="stat">
+        <div><strong>5.4 h</strong><span>Daily unpaid care and domestic work by Egyptian women, vs 0.6 h for men (<a href="https://erf.org.eg/publications/unpaid-care-work-in-egypt-gender-gaps-in-time-use/">ERF 2023</a>)</span></div>
+        <div><strong>83%</strong><span>Android share of mobile in Egypt, September 2026 (<a href="https://gs.statcounter.com/os-market-share/mobile/egypt">StatCounter</a>)</span></div>
+        <div><strong>98%</strong><span>Egyptians surveyed who use WhatsApp, 90% daily (<a href="https://journals.ekb.eg/article_154770.html">EKB survey of 400</a>)</span></div>
+        <div><strong>4–20%</strong><span>Day-30 retention reported for productivity apps (<a href="https://foxdata.com/en/blogs/why-users-stop-using-productivity-apps-and-how-to-fix-it">FoxData</a>, <a href="https://unstar.app/blog/app-retention-benchmarks-2026">unstar</a>)</span></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Group</th><th>Leading apps</th><th>What they prove</th><th>Typical price</th><th>What users complain about</th></tr></thead>
+          <tbody>
+            <tr><td>Chores and cleaning</td><td><a href="https://apps.apple.com/app/id1498897320">Sweepy</a>, Tody, Home Routines, FlyLady</td><td>Rooms or zones plus a daily list built to your capacity; FlyLady proves a no-guilt, morning/afternoon/evening routine has a loyal female audience (<a href="https://en.wikipedia.org/wiki/FlyLady">FlyLady</a>)</td><td>$20–30 a year</td><td>Sharing behind a paywall; unfair effort points; can't log yesterday (<a href="https://justuseapp.com/en/app/1498897320/sweepy-home-cleaning-schedule/reviews">reviews</a>); timers that expire when the app closes</td></tr>
+            <tr><td>Family organizers</td><td><a href="https://apppricinglab.com/app/apple/407108860">Cozi</a> (383K ratings), FamilyWall, Maple, TimeTree</td><td>Shared calendar, shopping lists and meal plans are the most-rated family features</td><td>$39–45 a year, or ads</td><td>Sync glitches, ads, forced registration, US-only date formats</td></tr>
+            <tr><td>Gentle and energy planners</td><td>Tiimo (Apple App of the Year 2025), Structured, Sunsama, Finch</td><td>Visual timelines, capacity or energy budgets (<a href="https://help.sunsama.com/docs/daily-planning">Sunsama workload limit</a>, Structured energy monitor) and a guilt-free tone</td><td>$30–54 a year</td><td>Reminders and timers that fail when closed (<a href="https://justuseapp.com/en/app/1480220328/tiimo-visual-daily-planner/reviews">Tiimo reviews</a>); hard paywalls</td></tr>
+            <tr><td>General to-do</td><td>Todoist, TickTick, Microsoft To Do, Any.do</td><td>Fast quick-add with natural language; Any.do sells WhatsApp reminders (<a href="https://androidcentral.com/whatsapp-can-now-set-reminders-thanks-anydo-integration">Android Central</a>)</td><td>Free to $60 a year</td><td>No Arabic interface in Todoist (<a href="https://www.todoist.com/help/todoist/get-started/change-languages-in-todoist-EJZMow">Todoist</a>); broken right-to-left text across many tools (<a href="https://forum.asana.com/t/rtl-language-support/4755?page=3">Asana forum</a>)</td></tr>
+            <tr><td>Muslim lifestyle</td><td>Muslim Pro, MyWaqt, Deen Focused, Barakah</td><td>Prayer times as a day structure; tiny planners schedule tasks between prayers but have almost no ratings</td><td>Free with ads, $35 a year</td><td>Ads in a religious app; Muslim Pro's 2020 location-data scandal (<a href="https://www.christiancentury.org/article/news/popular-muslim-prayer-app-ends-relationship-firm-selling-data-us-military">report</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout">Arabic-market check: Google Play Egypt searches in Arabic return Sweepy, Tody, FlyLady, small Arabic-listed apps such as Roomsy (about 1,000 installs) and generic planners. Putzplan offers Arabic rooms and tasks. None is Arabic-native with an Egyptian voice and real traction (<a href="https://play.google.com/store/search?q=%D8%AC%D8%AF%D9%88%D9%84%20%D8%AA%D9%86%D8%B8%D9%8A%D9%81%20%D8%A7%D9%84%D8%A8%D9%8A%D8%AA&c=apps&hl=ar&gl=EG">Play search</a>, <a href="https://apps.apple.com/us/app/putzplan/id1673056330">Putzplan</a>).</p>
+    </section>
+
+    <section id="matrix" aria-labelledby="m-h">
+      <h2 id="m-h">Feature matrix</h2>
+      <p>✓ yes · ◐ partial or paid · — no. The Yawmi column describes the MVP as built.</p>
+      <div class="tablewrap">
+        <table class="matrix">
+          <thead><tr><th>Feature</th><th>Sweepy</th><th>FlyLady</th><th>Cozi</th><th>Tiimo</th><th>Structured</th><th>Sunsama</th><th>Todoist</th><th>Muslim Pro</th><th class="us">Yawmi</th></tr></thead>
+          <tbody>
+            <tr><td>Daily effort or energy budget</td><td class="p">◐</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="p">◐</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="us y">✓</td></tr>
+            <tr><td>Waiting time that isn't effort</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="p">◐</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="us y">✓</td></tr>
+            <tr><td>Day periods, not exact times</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="p">◐</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="p">◐</td><td class="us y">✓</td></tr>
+            <tr><td>Arabic UI and true right-to-left</td><td class="n">—</td><td class="n">—</td><td class="n">?</td><td class="n">?</td><td class="n">?</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="us y">✓</td></tr>
+            <tr><td>Templates and presets</td><td class="y">✓</td><td class="y">✓</td><td class="p">◐</td><td class="y">✓</td><td class="p">◐</td><td class="p">◐</td><td class="y">✓</td><td class="n">—</td><td class="us y">✓</td></tr>
+            <tr><td>No account, works offline</td><td class="p">◐</td><td class="y">✓</td><td class="n">—</td><td class="p">◐</td><td class="y">✓</td><td class="n">—</td><td class="p">◐</td><td class="p">◐</td><td class="us y">✓</td></tr>
+            <tr><td>Visual timeline</td><td class="n">—</td><td class="n">—</td><td class="p">◐</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="p">◐</td><td class="n">—</td><td class="us p">◐</td></tr>
+            <tr><td>Reminders when the app is closed</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="us n">—</td></tr>
+            <tr><td>Shared household</td><td class="p">◐</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="us n">—</td></tr>
+            <tr><td>Rooms or zones</td><td class="y">✓</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="us n">—</td></tr>
+            <tr><td>Shopping and meal lists</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="p">◐</td><td class="n">—</td><td class="us n">—</td></tr>
+            <tr><td>Gamification</td><td class="y">✓</td><td class="p">◐</td><td class="n">—</td><td class="p">◐</td><td class="n">—</td><td class="n">—</td><td class="p">◐</td><td class="p">◐</td><td class="us n">—</td></tr>
+            <tr><td>Prayer-time awareness</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="us n">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="valued" aria-labelledby="val-h">
+      <h2 id="val-h">Features the market shows users value</h2>
+      <p>Ranked by the market researcher from reviews, pricing and ratings. The tag shows where Yawmi stands today.</p>
+      <ol class="ranked">
+        <li><strong>Ready-made routines and templates</strong> that remove the blank page (FlyLady, Sweepy, Home Routines). <span class="tag have">Have</span></li>
+        <li><strong>Reminders that work when the app is closed.</strong> The most common failure complaint in the category. <span class="tag gap">Biggest gap</span></li>
+        <li><strong>A shared household</strong> with tasks assigned to people; the main paid feature in Sweepy, Tody, Cozi and FamilyWall. <span class="tag later">Later</span></li>
+        <li><strong>A visual sense of how full the day is</strong> (Tiimo, Structured, Llama Life). <span class="tag gap">Partial</span></li>
+        <li><strong>Capacity and overload warnings</strong> (Sunsama, Structured). Yawmi's core idea, applied to housework for the first time. <span class="tag have">Have</span></li>
+        <li><strong>Guilt-free replanning</strong> when the day slips (Structured Replan, Todoist reschedule). <span class="tag gap">Gap</span></li>
+        <li><strong>Room or zone rotation</strong> for deep cleaning. <span class="tag later">Later</span></li>
+        <li><strong>Gentle, care-framed motivation</strong> instead of streaks (Finch, Tiimo, FlyLady). <span class="tag have">Have</span></li>
+        <li><strong>Light gamification and kids' chores</strong> (Tody's "Dusty", BusyKid). <span class="tag later">Risky, see devil's advocate</span></li>
+        <li><strong>Shopping lists and meal planning</strong> (Cozi's core). <span class="tag later">Later</span></li>
+        <li><strong>WhatsApp as a channel</strong> (Any.do sells WhatsApp reminders). <span class="tag later">Test as sharing first</span></li>
+        <li><strong>Privacy, no account, no ads.</strong> <span class="tag have">Have</span></li>
+      </ol>
+    </section>
+
+    <section id="whitespace" aria-labelledby="w-h">
+      <h2 id="w-h">White space Yawmi can own</h2>
+      <ol class="ranked">
+        <li><strong>An Arabic-native household planner with an Egyptian voice.</strong> Confirmed by both researchers; the devil's advocate notes the niche may be empty because demand is unproven.</li>
+        <li><strong>Waiting time as a first-class idea.</strong> No studied app models effort while a washing machine, oven or dough works in the background.</li>
+        <li><strong>Housework as a real, plannable workload.</strong> The 5.4 hours a day is verified. Whether "see how much you really do" helps or feels like surveillance is untested.</li>
+        <li><strong>Privacy and offline by design,</strong> against ad-funded and account-first competitors. This conflicts with closed-app reminders, which need a server.</li>
+        <li><strong>A light app for budget Android phones,</strong> which carry about 83% of Egyptian mobile traffic.</li>
+        <li><strong>Day periods that could later be labelled by prayer</strong> ("after Dhuhr"). Using the names as labels costs nothing; computing exact prayer times is a liability (see devil's advocate).</li>
+      </ol>
+    </section>
+
+    <section id="ux" aria-labelledby="ux-h">
+      <h2 id="ux-h">UX patterns worth adopting</h2>
+      <p>The UX expert's shortlist from 22 patterns, filtered by what the devil's advocate let stand.</p>
+      <div class="patterns">
+        <div class="pattern"><h3>Guilt-free carry-over</h3><span class="who">Structured, Todoist</span><p>Unfinished tasks move to tomorrow in one tap, with a summary that lists only what she did. Never red, never "overdue".</p></div>
+        <div class="pattern"><h3>Capacity before the list</h3><span class="who">Sweepy Smart Schedule</span><p>She says how much she can do, and the list never exceeds it. Keep it to a one-tap default, not a daily gate.</p></div>
+        <div class="pattern"><h3>The dirt is the opponent, not her</h3><span class="who">Tody, Finch</span><p>No streaks to break and no score of her day. Rewards, if any, are gentle and cosmetic.</p></div>
+        <div class="pattern"><h3>Start from templates</h3><span class="who">Routinery, Tiimo</span><p>Recognizing an option beats recalling one, especially for low digital literacy. Avoid long quiz onboarding like Fabulous's 42 screens.</p></div>
+        <div class="pattern"><h3>Today only, with a "now" cue</h3><span class="who">Tiimo</span><p>Show one day at a time and keep the running timer and waits pinned in view on phones.</p></div>
+        <div class="pattern"><h3>Literal icons with text labels</h3><span class="who">Low-literacy UX research</span><p>Abstract glyphs must be learned. Pair pictures with words, and keep the layout identical every time (<a href="https://www.microsoft.com/en-us/research/?p=167992">Microsoft Research</a>).</p></div>
+        <div class="pattern"><h3>Arabic text at 16px or larger</h3><span class="who">UAE design system</span><p>Arabic letterforms depend on dots and suffer at small sizes (<a href="https://designsystem.gov.ae/guidelines/typography">UAE guidelines</a>).</p></div>
+        <div class="pattern"><h3>Correct right-to-left mirroring</h3><span class="who">Material, Mozilla</span><p>Mirror direction arrows and progress. Do not mirror play icons, checkmarks or numbers (<a href="https://m2.material.io/go/design-bidirectionality">Material</a>).</p></div>
+      </div>
+    </section>
+
+    <section id="audit" aria-labelledby="a-h">
+      <h2 id="a-h">MVP UX audit</h2>
+      <p><strong>Strong already:</strong> the gentle Egyptian copy, clean right-to-left code, the unique waiting-time concept, undo on delete, honest wording about when alerts work, and template-based empty states.</p>
+      <div class="issues">
+        <div class="issue"><span class="sev crit">Critical</span><div><p>Ticking "start washing machine" done cancels the countdown she actually needs.</p><p class="fix">Keep the wait running after completion, and ask "الغسالة اشتغلت؟ نعدّ ٥٠ دقيقة ونقولك".</p></div></div>
+        <div class="issue"><span class="sev crit">Critical</span><div><p>Unfinished tasks from past days vanish, while the week strip still shows them as counts.</p><p class="fix">Add a gentle "من امبارح" tray, and show counts only on today and future days. Codex's earlier build already has "bring old tasks forward".</p></div></div>
+        <div class="issue"><span class="sev high">High</span><div><p>On phones, the running timer and waits sit below the whole task list.</p><p class="fix">A pinned "now" strip under the top bar.</p></div></div>
+        <div class="issue"><span class="sev high">High</span><div><p>The task form asks for numbers, and hides the key "waiting time" setting.</p><p class="fix">Effort as tap-to-choose chips and a visible "فيها استنا؟" switch. Keep it simple; skip keyword magic for now.</p></div></div>
+        <div class="issue"><span class="sev high">High</span><div><p>Text is 10–13px in places, and Unicode symbols are used as icons.</p><p class="fix">16px base, nothing under 12px, a bundled Arabic font, and labelled SVG icons.</p></div></div>
+        <div class="issue"><span class="sev high">High</span><div><p>Deleting a routine has no undo and no confirmation.</p><p class="fix">Offer undo, or suggest pausing instead.</p></div></div>
+        <div class="issue"><span class="sev med">Medium</span><div><p>Checkbox and input borders fail non-text contrast, and the most-tapped control is only 30px.</p><p class="fix">Darker borders and 44px tap targets.</p></div></div>
+        <div class="issue"><span class="sev med">Medium</span><div><p>The day plan is read-only, the capacity bar shrinks as she works, and the wait-finished alert disappears after 3 seconds.</p><p class="fix">Actionable plan rows, a done-and-remaining bar, and a banner that stays until dismissed.</p></div></div>
+      </div>
+    </section>
+
+    <section id="devil" aria-labelledby="d-h">
+      <h2 id="d-h">Devil's advocate</h2>
+      <p>The third agent's job was to break the other two. Its verdict: "a well-engineered answer to a question nobody has asked a real user yet."</p>
+      <h3>Corrections to the research</h3>
+      <div class="corrections">
+        <div class="corr"><span class="was">88–91% of Egyptian phones run Android</span><span>83.4% Android, 16.6% iOS in September 2026 (<a href="https://gs.statcounter.com/os-market-share/mobile/egypt">StatCounter</a>)</span></div>
+        <div class="corr"><span class="was">Global apps lack Arabic</span><span>Some have Arabic store listings; what's missing is an Arabic-native product with traction</span></div>
+        <div class="corr"><span class="was">About 7 hours a day for women in their 30s and 40s</span><span>Not verified; only the 5.4 hours figure holds</span></div>
+        <div class="corr"><span class="was">About 56M WhatsApp users in Egypt</span><span>Not verified; one vendor says about 52M</span></div>
+        <div class="corr"><span class="was">Prayer-time periods would be a world first</span><span>Unverified marketing; calculation methods differ by 10–20 minutes, and a wrong Fajr time destroys trust</span></div>
+      </div>
+      <h3>The hardest points</h3>
+      <ol class="ranked">
+        <li><strong>The real competitor is WhatsApp, paper and memory,</strong> not Sweepy. No study shows how Egyptian women manage the household today.</li>
+        <li><strong>"Effort minutes" is untested.</strong> If she doesn't think of mopping as 30 effort minutes, capacity, the day plan and the log all fall together.</li>
+        <li><strong>A pure web app can't send reliable alerts when closed.</strong> Scheduled local notifications never shipped in browsers (<a href="https://developer.chrome.com/docs/web-platform/notification-triggers">Chrome</a>), so it needs server push, which breaks "no account". A thin Android wrapper with local alarms is the cheapest reliable path.</li>
+        <li><strong>A link alone may not reach her.</strong> Competitors rank for the exact Arabic searches she would type on Play. A Play listing via an Android wrapper (TWA) belongs in the beta, for discovery and trust.</li>
+        <li><strong>The UX ideas conflict.</strong> A daily check-in fights "usable in 30 seconds"; keyword parsing is magic that low-literacy users can't see or fix; a two-lane timeline is a chart idiom. About 31% of Egyptian women were illiterate in 2016 data (<a href="https://en.amwalalghad.com/?p=52983">CAPMAS via Amwal Al Ghad</a>), so decide explicitly whether they are in the audience.</li>
+        <li><strong>Over-engineering for zero users.</strong> The plan already specifies a sync engine and database roles, and there are two codebases of the same app.</li>
+      </ol>
+    </section>
+
+    <section id="tests" aria-labelledby="t-h">
+      <h2 id="t-h">Five assumptions that could kill Yawmi</h2>
+      <p>Each one has a test that fits in the next two weeks, with clear pass and fail lines.</p>
+      <div class="tablewrap">
+        <table class="tests">
+          <thead><tr><th>#</th><th>Assumption</th><th>Cheapest test</th><th>Pass / fail</th></tr></thead>
+          <tbody>
+            <tr><td class="c">1</td><td>She will open a planner daily instead of WhatsApp, memory or paper</td><td>8–10 target women use the installed app for 10 days with no nudges</td><td>Pass: half open it on 6+ days. Fail: under 30%; pivot to a WhatsApp-shareable or printable plan</td></tr>
+            <tr><td class="c">2</td><td>"Effort minutes" and capacity make sense</td><td>6 moderated sessions: "add washing, cooking and mopping", then "is today too much?"</td><td>Pass: 4 of 6 set a plausible effort and read the warning right. Fail: switch to light / medium / heavy</td></tr>
+            <tr><td class="c">3</td><td>Waiting time is a real, felt problem</td><td>Ask about the last time laundry was forgotten in the machine, before showing the feature</td><td>Pass: 5 of 8 describe it unprompted. Fail: under 3; don't build server push for it</td></tr>
+            <tr><td class="c">4</td><td>She will find and install it from a link</td><td>One WhatsApp invite to 50 people through 3–4 mothers' groups; count opens and installs</td><td>Pass: 20%+ of openers install. Fail: under 10%; a Play listing is mandatory before beta</td></tr>
+            <tr><td class="c">5</td><td>"See how much work you really do" helps rather than repels</td><td>Show 10 women "plan your day calmly" vs "see how much work you really do"</td><td>Pass: measurement chosen or tied, no unease. Fail: 3+ ask "who will see this?"; lead with calm and keep the log private</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Also ask every participant who would pay, and how, and note whether anyone names a price unprompted.</p>
+    </section>
+
+    <section id="next" aria-labelledby="n-h">
+      <h2 id="n-h">What to do next</h2>
+      <p>Where all three agents agree, combined with the roadmap.</p>
+      <ol class="steps">
+        <li><strong>Merge to one codebase this week.</strong> Keep the new MVP, port Codex's "bring old tasks forward", global undo and manual time entries, then archive the Merna App build.</li>
+        <li><strong>Fix the two critical bugs and the readability issues.</strong> Waits survive completion, a "من امبارح" tray, 16px text, 44px targets, a pinned "now" strip. About a week of work.</li>
+        <li><strong>Wrap it for Google Play</strong> with a thin Android shell (TWA), mainly so she can find and trust it, and to unlock local alarms later.</li>
+        <li><strong>Run the five tests</strong> with 8–10 Egyptian women for two weeks. Reuse the user-testing script from the Codex folder.</li>
+        <li><strong>Freeze everything else</strong> until tests 1 and 2 pass: cloud backup, sync, prayer times, gamification, WhatsApp reminders, the two-lane timeline.</li>
+        <li><strong>If tests 1 or 2 fail,</strong> pivot cheaply to a WhatsApp-shareable daily plan with a simple light / medium / heavy day, rather than polishing the current model.</li>
+      </ol>
+    </section>
+
+    <footer>
+      <p>Prepared from three independent agent reports: market research, a UX/UI expert audit of the MVP code, and a devil's advocate review that re-verified key claims on 13 October 2026. Prices are US list prices unless noted, and some come from third-party aggregators that conflict with each other.</p>
+      <p>Links point to the sources the agents cited. Claims marked unverified were not confirmed against a primary source.</p>
+    </footer>
+  </main>
+</div>

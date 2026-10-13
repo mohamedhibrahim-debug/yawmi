@@ -1,0 +1,158 @@
+<title>Yawmi Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one path of five steps. A progress rail on top, then one card per step. */
+:root {
+  --bg: #f5f7f2; --surface: #ffffff; --ink: #203b34; --muted: #5d7066; --line: #dde6dc;
+  --green: #28574a; --mist: #e4ece3; --ok: #2e7d4f; --ok-bg: #e3f1e7; --now: #b0742f; --now-bg: #fbefe3;
+  --display: "Readex Pro", "Segoe UI", Tahoma, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121a17; --surface: #1a2420; --ink: #e3ece6; --muted: #9db1a6; --line: #2c3a34;
+  --green: #7fc4a9; --mist: #22322b; --ok: #7fd19d; --ok-bg: #1d3226; --now: #e0a35d; --now-bg: #3a2c1c; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #121a17; --surface: #1a2420; --ink: #e3ece6; --muted: #9db1a6; --line: #2c3a34;
+  --green: #7fc4a9; --mist: #22322b; --ok: #7fd19d; --ok-bg: #1d3226; --now: #e0a35d; --now-bg: #3a2c1c; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15.5px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 64px; display: grid; gap: 28px; }
+h1, h2 { font-family: var(--display); margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(30px, 6vw, 42px); line-height: 1.15; }
+h1 span { color: var(--green); }
+h2 { font-size: 19px; }
+p { margin: 0; }
+.label { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 60ch; margin-top: 8px; }
+
+/* progress rail */
+.rail { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.seg { display: grid; gap: 6px; }
+.seg i { display: block; height: 8px; border-radius: 8px; background: var(--line); }
+.seg.done i { background: var(--ok); }
+.seg.now i { background: repeating-linear-gradient(90deg, var(--now) 0 14px, color-mix(in srgb, var(--now) 45%, transparent) 14px 20px); }
+.seg span { font: 500 11px var(--body); color: var(--muted); }
+.seg.done span { color: var(--ok); } .seg.now span { color: var(--now); font-weight: 600; }
+
+/* steps */
+.steps { display: grid; gap: 12px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; }
+.step.now { border-color: var(--now); box-shadow: 0 0 0 3px var(--now-bg); }
+.dot { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font: 700 18px var(--display); background: var(--mist); color: var(--green); }
+.step.done .dot { background: var(--ok); color: #fff; }
+.step.now .dot { background: var(--now); color: #fff; }
+.body { display: grid; gap: 8px; min-width: 0; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.pill { font: 500 12px var(--body); border-radius: 999px; padding: 2px 10px; background: var(--mist); color: var(--muted); }
+.done .pill { background: var(--ok-bg); color: var(--ok); }
+.now .pill { background: var(--now-bg); color: var(--now); }
+.time { font: 500 12px var(--mono); color: var(--muted); }
+.what { margin: 0; padding-left: 18px; display: grid; gap: 2px; font-size: 14.5px; }
+.what li::marker { color: var(--green); }
+.gate { font-size: 14px; color: var(--muted); }
+.gate b { color: var(--ink); font-weight: 600; }
+.later { border: 1px dashed var(--line); border-radius: 16px; padding: 16px 18px; display: grid; gap: 4px; }
+.needs { background: var(--now-bg); border-radius: 14px; padding: 14px 16px; display: grid; gap: 6px; font-size: 14.5px; }
+.needs ul { margin: 0; padding-left: 18px; }
+@media (max-width: 560px) {
+  .step { grid-template-columns: minmax(0, 1fr); }
+  .seg span { font-size: 10px; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="label">iOS app · updated after the market research</span>
+    <h1>Yawmi <span>يومي</span> roadmap</h1>
+    <p class="lede">Five steps to an iPhone app real households use every day. We build only what the next test needs, and we let real women decide what comes after.</p>
+  </header>
+
+  <div class="rail" aria-label="Progress: steps 1 and 2 done, step 3 in progress">
+    <div class="seg done"><i></i><span>1 · MVP</span></div>
+    <div class="seg done"><i></i><span>2 · iOS + voice</span></div>
+    <div class="seg now"><i></i><span>3 · First iPhone build</span></div>
+    <div class="seg"><i></i><span>4 · Test with women</span></div>
+    <div class="seg"><i></i><span>5 · Launch or rethink</span></div>
+  </div>
+
+  <div class="steps">
+    <article class="step done">
+      <div class="dot" aria-hidden="true">✓</div>
+      <div class="body">
+        <div class="top"><h2>1. The core app</h2><span class="pill">Done</span></div>
+        <ul class="what">
+          <li>Tasks with effort minutes, waiting time and morning / afternoon / evening</li>
+          <li>Routines, a daily log, backup and restore</li>
+          <li>Works offline; data stays on the phone</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="step done">
+      <div class="dot" aria-hidden="true">✓</div>
+      <div class="body">
+        <div class="top"><h2>2. iPhone app and voice</h2><span class="pill">Done in code</span></div>
+        <ul class="what">
+          <li>Say your tasks in Egyptian Arabic; review them on simple cards before adding</li>
+          <li>Phone-style app with a microphone button in the middle</li>
+          <li>iOS project with alarms that ring when a wait ends, even with the app closed</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="step now">
+      <div class="dot" aria-hidden="true">3</div>
+      <div class="body">
+        <div class="top"><h2>3. First iPhone build</h2><span class="pill">Now</span><span class="time">about 1 week</span></div>
+        <ul class="what">
+          <li>Build on a Mac or a cloud Mac, and install through TestFlight</li>
+          <li>Check that Apple's speech recognition understands Egyptian Arabic</li>
+          <li>Fix the two known bugs: finishing a task stops its wait, and yesterday's tasks vanish</li>
+          <li>Bring over the best parts of the earlier Codex version, then retire it</li>
+        </ul>
+        <p class="gate"><b>Ready when:</b> the app runs on a real iPhone, voice works in Egyptian Arabic, and a wait alarm rings with the app closed.</p>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="dot" aria-hidden="true">4</div>
+      <div class="body">
+        <div class="top"><h2>4. Test with 8–10 women</h2><span class="pill">Next</span><span class="time">2 weeks</span></div>
+        <ul class="what">
+          <li>Do they open it every day?</li>
+          <li>Is voice easier than typing?</li>
+          <li>Do "effort minutes" and waiting time make sense to them?</li>
+        </ul>
+        <p class="gate"><b>Passes if:</b> at least half use it on 6 of 10 days, and most add tasks by voice without help.</p>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="dot" aria-hidden="true">5</div>
+      <div class="body">
+        <div class="top"><h2>5. Launch or rethink</h2><span class="pill">Decision</span><span class="time">about 2 weeks</span></div>
+        <ul class="what">
+          <li><b>If the test passes:</b> publish on the App Store and add iCloud backup</li>
+          <li><b>If it doesn't:</b> simplify to light / medium / heavy days and a plan she can share on WhatsApp</li>
+        </ul>
+      </div>
+    </article>
+  </div>
+
+  <div class="needs">
+    <span class="label" style="color:var(--now)">Needed from you for step 3</span>
+    <ul>
+      <li>An Apple Developer account ($99 a year) to install on iPhones and use TestFlight</li>
+      <li>A Mac with Xcode, or permission to build on GitHub's cloud Macs</li>
+    </ul>
+  </div>
+
+  <div class="later">
+    <span class="label">Later, only if women ask for it</span>
+    <p>Sharing with a partner or kids, an Android version, sync between devices, shopping lists.</p>
+  </div>
+</div>

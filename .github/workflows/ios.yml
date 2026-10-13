@@ -1,0 +1,74 @@
+# Builds the iOS app on a GitHub-hosted Mac.
+# - Every push: tests + an unsigned simulator build (proves the app compiles).
+# - TestFlight upload needs an Apple Developer account and signing secrets; see README "iOS".
+name: iOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build web bundle for the app
+        run: npm run build:native
+
+      - name: Sync Capacitor (runs pod install)
+        run: npx cap sync ios
+
+      - name: Build for the iOS simulator (unsigned)
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Yawmi-simulator
+          path: build/Build/Products/Debug-iphonesimulator/App.app
+
+      # An unsigned .ipa for free installation on your own iPhone with a normal Apple ID,
+      # using Sideloadly or AltStore on Windows. Apple limits free signing to 7 days, then reinstall.
+      - name: Build unsigned IPA for sideloading
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build-device \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build
+          mkdir -p Payload
+          cp -R build-device/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qry Yawmi-unsigned.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Yawmi-ipa
+          path: Yawmi-unsigned.ipa

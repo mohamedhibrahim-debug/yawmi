@@ -1,0 +1,39 @@
+{
+  "name": "yawmi",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "يومي — Arabic-first, offline-first household day planner (MVP)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build:preview-page": "vite build --mode artifact && node scripts/make-artifact.mjs",
+    "icons": "node scripts/make-icons.mjs public",
+    "build:native": "vite build --mode native",
+    "ios:sync": "npm run build:native && npx cap sync ios",
+    "ios:open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/core": "^7.6.9",
+    "@capacitor/haptics": "^7.0.5",
+    "@capacitor/local-notifications": "^7.0.7",
+    "@capacitor/status-bar": "^7.0.6",
+    "idb": "^8.0.4",
+    "preact": "^10.29.8"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.6.9",
+    "@capacitor/ios": "^7.6.9",
+    "@preact/preset-vite": "^2.10.6",
+    "fake-indexeddb": "^6.2.5",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.4",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^3.2.7"
+  }
+}
